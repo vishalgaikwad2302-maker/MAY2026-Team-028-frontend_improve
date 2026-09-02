@@ -3,7 +3,10 @@
  * Handles JWT authentication headers, token storage, auto-refresh, and error envelopes.
  */
 
-const envApiUrl = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
+let envApiUrl = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
+if (envApiUrl && !envApiUrl.endsWith("/api/v1")) {
+  envApiUrl = `${envApiUrl}/api/v1`;
+}
 
 const BASE_CANDIDATES = [
   envApiUrl,
