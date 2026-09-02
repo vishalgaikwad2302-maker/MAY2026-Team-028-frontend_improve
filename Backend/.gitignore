@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Packaging metadata regenerated on every editable install
+*.egg-info/
+
+# Environment / secrets
+#
+# NOTE: uv.lock is deliberately NOT ignored — it must be committed. It is what
+# makes `uv sync` install identical versions for all five of us and in CI.
+.env
+.env.local
+.env.*.local
+
+# Test / coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Local file storage (uploaded complaint photos)
+uploads/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+
+# Generated OpenAPI document — produced by CI from the code to diff against the
+# hand-written docs/sprint-N/openapi.yaml. An output, never a source.
+openapi.generated.json
+
+# Local SQLite databases used for quick experiments
+*.db
+*.sqlite3

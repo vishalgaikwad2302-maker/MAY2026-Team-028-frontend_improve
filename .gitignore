@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.production
+
+# Build and deployment
+dist/
+dist-ssr/
+build/
+.vercel/
+
+# Logs and caches
+*.log
+.pytest_cache/
+.coverage
+.ruff_cache/
+.mypy_cache/
+
+# Local databases & uploads
+uploads/
+*.db
+*.sqlite3
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

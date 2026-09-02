@@ -1,0 +1,49 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths: ["Frontend/**", ".github/workflows/frontend-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["Frontend/**", ".github/workflows/frontend-ci.yml"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: Frontend
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: Frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (oxlint)
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      # Vercel deploys itself off the Git integration (its own build, not this
+      # job), so this workflow is verification only: it blocks a PR from
+      # merging with a broken lint/build before Vercel ever sees the commit.
+      - name: Upload production build (debugging aid)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-${{ github.run_id }}
+          path: Frontend/dist
+          retention-days: 7

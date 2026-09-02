@@ -1,0 +1,8 @@
+# CODEOWNERS for SmartSweep repository (3-way split)
+# Backend/app -> Backend team / Person A
+# Frontend/src -> Frontend team / Person B
+# docs/        -> Docs & Specifications team / Person C
+
+Backend/app/    @MAY2026-Team-028/backend-team @nitingupta-022
+Frontend/src/   @MAY2026-Team-028/frontend-team @vishalG2302
+docs/           @MAY2026-Team-028/docs-team @pankuzj

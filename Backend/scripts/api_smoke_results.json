@@ -1,0 +1,1325 @@
+[
+  {
+    "name": "Register new citizen",
+    "method": "POST",
+    "path": "/auth/register",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "ok": true,
+    "kind": "contract",
+    "ms": 240.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Register duplicate email rejected",
+    "method": "POST",
+    "path": "/auth/register",
+    "expected": [
+      409
+    ],
+    "actual": 409,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Register invalid payload rejected",
+    "method": "POST",
+    "path": "/auth/register",
+    "expected": [
+      422
+    ],
+    "actual": 422,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Login admin (seeded)",
+    "method": "POST",
+    "path": "/auth/login",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 229.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Login crew (seeded)",
+    "method": "POST",
+    "path": "/auth/login",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 225.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Login citizen (seeded)",
+    "method": "POST",
+    "path": "/auth/login",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 228.7,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Login wrong password rejected",
+    "method": "POST",
+    "path": "/auth/login",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 227.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Refresh with valid refresh token",
+    "method": "POST",
+    "path": "/auth/refresh",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Refresh rejects access token",
+    "method": "POST",
+    "path": "/auth/refresh",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.4,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get own profile",
+    "method": "GET",
+    "path": "/auth/me",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Profile without token rejected",
+    "method": "GET",
+    "path": "/auth/me",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Profile with malformed token rejected",
+    "method": "GET",
+    "path": "/auth/me",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Admin-only as admin",
+    "method": "GET",
+    "path": "/auth/admin-only",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Admin-only as citizen forbidden",
+    "method": "GET",
+    "path": "/auth/admin-only",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Crew-only as crew",
+    "method": "GET",
+    "path": "/auth/crew-only",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.6,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Crew-only as citizen forbidden",
+    "method": "GET",
+    "path": "/auth/crew-only",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List wards",
+    "method": "GET",
+    "path": "/wards",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get ward by id",
+    "method": "GET",
+    "path": "/wards/{ward_id}",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get unknown ward -> 404",
+    "method": "GET",
+    "path": "/wards/{ward_id}",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.7,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get my ward",
+    "method": "GET",
+    "path": "/wards/me",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.1,
+    "note": "route-order sensitive",
+    "body": null
+  },
+  {
+    "name": "Get my ward when user has none -> 404",
+    "method": "GET",
+    "path": "/wards/me",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get my ward without token rejected",
+    "method": "GET",
+    "path": "/wards/me",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create complaint",
+    "method": "POST",
+    "path": "/complaints",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "ok": true,
+    "kind": "contract",
+    "ms": 33.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create complaint unauthenticated rejected",
+    "method": "POST",
+    "path": "/complaints",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.9,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create complaint invalid payload rejected",
+    "method": "POST",
+    "path": "/complaints",
+    "expected": [
+      422
+    ],
+    "actual": 422,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create near-duplicate complaint",
+    "method": "POST",
+    "path": "/complaints",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "ok": true,
+    "kind": "contract",
+    "ms": 14.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List complaints (paged)",
+    "method": "GET",
+    "path": "/complaints",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 5.1,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List complaints with filters",
+    "method": "GET",
+    "path": "/complaints?filters",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 4.4,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List complaints with search",
+    "method": "GET",
+    "path": "/complaints?search",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 4.1,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get complaint by id",
+    "method": "GET",
+    "path": "/complaints/{id}",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.4,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get unknown complaint -> 404",
+    "method": "GET",
+    "path": "/complaints/{id}",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.7,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update complaint fields",
+    "method": "PATCH",
+    "path": "/complaints/{id}",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 11.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Change status pending -> in_progress",
+    "method": "PATCH",
+    "path": "/complaints/{id}/status",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 13.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Illegal transition in_progress -> pending rejected",
+    "method": "PATCH",
+    "path": "/complaints/{id}/status",
+    "expected": [
+      409
+    ],
+    "actual": 409,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.6,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Change status in_progress -> resolved",
+    "method": "PATCH",
+    "path": "/complaints/{id}/status",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 18.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Cancel resolved complaint rejected",
+    "method": "POST",
+    "path": "/complaints/{id}/cancel",
+    "expected": [
+      409
+    ],
+    "actual": 409,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.6,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Complaint status history",
+    "method": "GET",
+    "path": "/complaints/{id}/history",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.9,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "History records the full audit trail",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "new->pending | pending->in_progress | in_progress->resolved",
+    "body": null
+  },
+  {
+    "name": "History rows carry required fields",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "3 rows",
+    "body": null
+  },
+  {
+    "name": "Duplicate detection",
+    "method": "GET",
+    "path": "/complaints/{id}/duplicates",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Duplicate scan found the near-identical report",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "1 match(es)",
+    "body": null
+  },
+  {
+    "name": "Match embeds a serialized complaint, not an ORM object",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "keys=['complaint', 'confidence', 'descScore', 'distance', 'locationScore']",
+    "body": null
+  },
+  {
+    "name": "Cancel pending complaint",
+    "method": "POST",
+    "path": "/complaints/{id}/cancel",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 18.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "High-risk complaints feed",
+    "method": "GET",
+    "path": "/complaints/high-risk",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.4,
+    "note": "route-order sensitive",
+    "body": null
+  },
+  {
+    "name": "High-risk returns a Page envelope",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "keys=['items', 'meta']",
+    "body": null
+  },
+  {
+    "name": "High-risk picks up the biohazard/high-priority complaint",
+    "method": "BODY",
+    "path": "-",
+    "expected": [
+      "shape"
+    ],
+    "actual": "ok",
+    "ok": true,
+    "kind": "contract",
+    "ms": null,
+    "note": "2 total",
+    "body": null
+  },
+  {
+    "name": "Upload valid photo",
+    "method": "POST",
+    "path": "/complaints/upload-photo",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 0.9,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Upload disallowed MIME rejected",
+    "method": "POST",
+    "path": "/complaints/upload-photo",
+    "expected": [
+      415
+    ],
+    "actual": 415,
+    "ok": true,
+    "kind": "contract",
+    "ms": 0.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Upload oversized photo rejected",
+    "method": "POST",
+    "path": "/complaints/upload-photo",
+    "expected": [
+      413
+    ],
+    "actual": 413,
+    "ok": true,
+    "kind": "contract",
+    "ms": 32.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create task as admin",
+    "method": "POST",
+    "path": "/tasks",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "ok": true,
+    "kind": "contract",
+    "ms": 38.1,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create task as citizen forbidden",
+    "method": "POST",
+    "path": "/tasks",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List tasks as admin",
+    "method": "GET",
+    "path": "/tasks",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List tasks as crew",
+    "method": "GET",
+    "path": "/tasks",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List tasks as citizen forbidden",
+    "method": "GET",
+    "path": "/tasks",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Get task by id",
+    "method": "GET",
+    "path": "/tasks/{id}",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.9,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update task status as crew",
+    "method": "PATCH",
+    "path": "/tasks/{id}",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 11.1,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Complete task as crew",
+    "method": "POST",
+    "path": "/tasks/{id}/complete",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 26.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Cancel an already-completed task",
+    "method": "POST",
+    "path": "/tasks/{id}/cancel",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "observation",
+    "ms": 8.3,
+    "note": "succeeds \u2014 cancel_task has no state-machine guard, unlike complaint cancel",
+    "body": null
+  },
+  {
+    "name": "Get unknown task -> 404",
+    "method": "GET",
+    "path": "/tasks/{id}",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Create task with no linked complaint",
+    "method": "POST",
+    "path": "/tasks",
+    "expected": [
+      201
+    ],
+    "actual": 201,
+    "ok": true,
+    "kind": "contract",
+    "ms": 18.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Cancel assigned task",
+    "method": "POST",
+    "path": "/tasks/{id}/cancel",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 8.7,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List workers",
+    "method": "GET",
+    "path": "/resources/workers",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List workers as citizen forbidden",
+    "method": "GET",
+    "path": "/resources/workers",
+    "expected": [
+      403
+    ],
+    "actual": 403,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.0,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update worker status",
+    "method": "PATCH",
+    "path": "/resources/workers/{id}/status",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 9.4,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Invalid worker status rejected",
+    "method": "PATCH",
+    "path": "/resources/workers/{id}/status",
+    "expected": [
+      422
+    ],
+    "actual": 422,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update unknown worker -> 404",
+    "method": "PATCH",
+    "path": "/resources/workers/{id}/status",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 2.6,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List vehicles",
+    "method": "GET",
+    "path": "/resources/vehicles",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.2,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update vehicle status",
+    "method": "PATCH",
+    "path": "/resources/vehicles/{id}/status",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 19.8,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "List equipment",
+    "method": "GET",
+    "path": "/resources/equipment",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 3.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Update equipment status",
+    "method": "PATCH",
+    "path": "/resources/equipment/{id}/status",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 9.3,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Resources without token rejected",
+    "method": "GET",
+    "path": "/resources/equipment",
+    "expected": [
+      401
+    ],
+    "actual": 401,
+    "ok": true,
+    "kind": "contract",
+    "ms": 1.4,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Anonymous: List complaints",
+    "method": "GET",
+    "path": "/complaints",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.6,
+    "note": "reachable without a token",
+    "body": {
+      "items": [
+        {
+          "title": "MG Road near bus stop",
+          "description": "Overflowing garbage bin attracting stray dogs.",
+          "ward_id": 1,
+          "category": "biohazard",
+          "priority": "high",
+          "address": "MG Road near bus stop",
+          "latitude": 18.5204,
+          "longitude": 73.8567,
+          "photo_url": null,
+          "id": 1,
+          "reported_by_user_id": 1,
+          "status": "resolved",
+          "resolved_at": "2026-07-31T07:55:28.351231",
+          "cancelled_at": null,
+          "created_at": "2026-07-31T07:55:28",
+          "updated_at": "2026-07-31T07:55:28"
+        },
+        {
+          "title": "MG Road near bus stop",
+          "description": "Garbage bin overflowing near the MG Road bus stop.",
+          "ward_id": 1,
+          "category": "biohazard",
+          "priority": null,
+          "address": "MG Road near bus stop",
+          "latitude": 18.5204,
+          "longitude": 73.8567,
+          "photo_url": null,
+          "id": 2,
+          "reported_by_user_id": 1,
+          "status": "cancelled",
+          "resolved_at": null,
+          "cancelled_at": "2026-07-31T07:55:28.379142",
+          "created_at": "2026-07-31T07:55:28",
+          "updated_at": "2026-07-31T07:55:28"
+        },
+        {
+          "title": "Sinhagad Road drain",
+          "description": "Blocked storm drain overflowing onto footpath.",
+          "ward_id": 1,
+          "category": "biohazard",
+          "priority": null,
+          "address": "Sinhagad Road drain",
+          "latitude": 18.5204,
+          "longitude": 73.8567,
+          "photo_url": null,
+          "id": 3,
+          "reported_by_user_id": 1,
+          "status": "resolved",
+          "resolved_at": "2026-07-31T07:55:28.523801",
+          "cancelled_at": null,
+          "created_at": "2026-07-31T07:55:28",
+          "updated_at": "2026-07-31T07:55:28"
+        }
+      ],
+      "meta": {
+        "page": 1,
+        "page_size": 20,
+        "total": 3,
+        "total_pages": 1
+      }
+    }
+  },
+  {
+    "name": "Anonymous: Get complaint by id",
+    "method": "GET",
+    "path": "/complaints/1",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.6,
+    "note": "reachable without a token",
+    "body": {
+      "title": "MG Road near bus stop",
+      "description": "Overflowing garbage bin attracting stray dogs.",
+      "ward_id": 1,
+      "category": "biohazard",
+      "priority": "high",
+      "address": "MG Road near bus stop",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "photo_url": null,
+      "id": 1,
+      "reported_by_user_id": 1,
+      "status": "resolved",
+      "resolved_at": "2026-07-31T07:55:28.351231",
+      "cancelled_at": null,
+      "created_at": "2026-07-31T07:55:28",
+      "updated_at": "2026-07-31T07:55:28"
+    }
+  },
+  {
+    "name": "Anonymous: Update complaint",
+    "method": "PATCH",
+    "path": "/complaints/1",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 7.2,
+    "note": "reachable without a token",
+    "body": {
+      "title": "MG Road near bus stop",
+      "description": "Overflowing garbage bin attracting stray dogs.",
+      "ward_id": 1,
+      "category": "biohazard",
+      "priority": "low",
+      "address": "MG Road near bus stop",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "photo_url": null,
+      "id": 1,
+      "reported_by_user_id": 1,
+      "status": "resolved",
+      "resolved_at": "2026-07-31T07:55:28.351231",
+      "cancelled_at": null,
+      "created_at": "2026-07-31T07:55:28",
+      "updated_at": "2026-07-31T07:55:28"
+    }
+  },
+  {
+    "name": "Anonymous: Complaint history",
+    "method": "GET",
+    "path": "/complaints/1/history",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.3,
+    "note": "reachable without a token",
+    "body": [
+      {
+        "id": 1,
+        "complaint_id": 1,
+        "from_status": "new",
+        "to_status": "pending",
+        "changed_by_user_id": 1,
+        "notes": "Complaint created",
+        "created_at": "2026-07-31T07:55:28.265943"
+      },
+      {
+        "id": 3,
+        "complaint_id": 1,
+        "from_status": "pending",
+        "to_status": "in_progress",
+        "changed_by_user_id": 4,
+        "notes": "Status changed",
+        "created_at": "2026-07-31T07:55:28.334783"
+      },
+      {
+        "id": 4,
+        "complaint_id": 1,
+        "from_status": "in_progress",
+        "to_status": "resolved",
+        "changed_by_user_id": 4,
+        "notes": "Status changed",
+        "created_at": "2026-07-31T07:55:28.356604"
+      }
+    ]
+  },
+  {
+    "name": "Anonymous: Complaint duplicates",
+    "method": "GET",
+    "path": "/complaints/1/duplicates",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.6,
+    "note": "reachable without a token",
+    "body": []
+  },
+  {
+    "name": "Anonymous: Upload photo",
+    "method": "POST",
+    "path": "/complaints/upload-photo",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 0.9,
+    "note": "reachable without a token",
+    "body": {
+      "filename": "x.png",
+      "content_type": "image/png",
+      "size_bytes": 8
+    }
+  },
+  {
+    "name": "Anonymous: List wards",
+    "method": "GET",
+    "path": "/wards",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.2,
+    "note": "reachable without a token",
+    "body": [
+      {
+        "name": "Ward 12 - Kothrud",
+        "code": "W12",
+        "zone": "West",
+        "description": "Smoke test ward",
+        "is_active": true,
+        "id": 1,
+        "created_at": "2026-07-31T07:55:26",
+        "updated_at": "2026-07-31T07:55:26"
+      }
+    ]
+  },
+  {
+    "name": "Anonymous: Get task by id",
+    "method": "GET",
+    "path": "/tasks/1",
+    "expected": [
+      401
+    ],
+    "actual": 200,
+    "ok": false,
+    "kind": "observation",
+    "ms": 2.6,
+    "note": "reachable without a token",
+    "body": {
+      "title": "Clear overflowing bin on MG Road",
+      "description": "Dispatch compactor and two sweepers.",
+      "complaint_id": 3,
+      "ward_id": 1,
+      "vehicle_id": 1,
+      "status": "cancelled",
+      "id": 1,
+      "assigned_by_user_id": 5,
+      "resolution_notes": null,
+      "assigned_at": "2026-07-31T07:55:28.449487",
+      "started_at": null,
+      "completed_at": "2026-07-31T07:55:28.511976",
+      "worker_ids": [
+        1
+      ],
+      "equipment_ids": [
+        1
+      ],
+      "created_at": "2026-07-31T07:55:28",
+      "updated_at": "2026-07-31T07:55:28"
+    }
+  },
+  {
+    "name": "OpenAPI schema served",
+    "method": "GET",
+    "path": "/openapi.json",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 31.5,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Swagger UI served",
+    "method": "GET",
+    "path": "/docs",
+    "expected": [
+      200
+    ],
+    "actual": 200,
+    "ok": true,
+    "kind": "contract",
+    "ms": 0.7,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Unknown path -> enveloped 404",
+    "method": "GET",
+    "path": "/{unknown}",
+    "expected": [
+      404
+    ],
+    "actual": 404,
+    "ok": true,
+    "kind": "contract",
+    "ms": 0.6,
+    "note": "",
+    "body": null
+  },
+  {
+    "name": "Wrong method -> 405",
+    "method": "DELETE",
+    "path": "/wards",
+    "expected": [
+      405
+    ],
+    "actual": 405,
+    "ok": true,
+    "kind": "contract",
+    "ms": 0.6,
+    "note": "",
+    "body": null
+  }
+]

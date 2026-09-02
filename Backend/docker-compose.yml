@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: smartsweep
+      POSTGRES_PASSWORD: smartsweep
+      POSTGRES_DB: smartsweep
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartsweep -d smartsweep"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENV: dev
+      LOG_LEVEL: INFO
+      DATABASE_URL: postgresql+psycopg://smartsweep:smartsweep@db:5432/smartsweep
+      JWT_SECRET_KEY: change-me
+      CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:

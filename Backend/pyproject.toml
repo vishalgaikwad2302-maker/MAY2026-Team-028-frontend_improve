@@ -1,0 +1,104 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartsweep-backend"
+version = "0.1.0"
+description = "SmartSweep civic waste-management backend (FastAPI)."
+# 3.12, not 3.13: the team's dev machines run 3.12.3 and nothing in this stack
+# needs 3.13. Lower bound only — never an upper bound on a leaf application.
+requires-python = ">=3.12"
+
+dependencies = [
+    # --- Web framework ---
+    "fastapi>=0.115,<0.116",
+    "uvicorn[standard]>=0.32,<0.33",
+    "python-multipart>=0.0.20,<0.1", # multipart/form-data => photo upload (US-03)
+
+    # --- Data / persistence ---
+    "sqlalchemy>=2.0.36,<2.1",
+    "alembic>=1.14,<1.15",
+    "psycopg[binary]>=3.2,<3.3", # psycopg 3, not psycopg2: SQLAlchemy 2.0 native
+
+    # --- Validation / settings ---
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.7,<3",
+    "email-validator>=2.2,<3", # backs pydantic's EmailStr
+
+    # --- Auth ---
+    # PyJWT + bcrypt directly, NOT python-jose + passlib. See docs/DEV_LOG.md
+    # decision D-04: passlib 1.7.4 is unmaintained and breaks on bcrypt>=4.1,
+    # and python-jose has open CVEs.
+    "pyjwt>=2.10,<3",
+    "bcrypt>=4.2,<5",
+
+    # --- External integrations (Sprint 2) ---
+    "anthropic>=0.90,<1", # Claude API hazard classification (US-28/29/30)
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<9",
+    "pytest-cov>=6.0,<7",
+    "httpx>=0.28,<0.29", # backs fastapi.testclient.TestClient
+    "ruff>=0.8,<0.9",
+    "black>=24.10,<25",
+    "pre-commit>=4.0,<5",
+]
+
+# ---------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["app/db/migrations/versions"] # generated code
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# B008 forbids function calls in argument defaults, which is right in general and
+# wrong for FastAPI: `db: Session = Depends(get_db)` IS the framework's dependency
+# injection syntax, evaluated per request rather than once at import. Without this
+# allowlist every route in the project needs a `# noqa: B008`.
+extend-immutable-calls = [
+    "fastapi.Body",
+    "fastapi.Cookie",
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Query",
+    "fastapi.Security",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = "app/db/migrations/versions"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# -ra: summarise non-passing outcomes.
+# --strict-markers: a typo'd @pytest.mark becomes an error instead of silently
+#   doing nothing (the failure mode where a test you think is skipped isn't).
+# -m "not integration": plain `uv run pytest` runs only the fast SQLite suite, so
+#   nobody needs PostgreSQL running to work on a service or a util. CI runs the
+#   integration suite in a separate step with `-m integration`, which overrides
+#   this because a command-line -m wins over the one in addopts.
+addopts = "-ra --strict-markers -m 'not integration'"
+markers = [
+    "integration: needs a real PostgreSQL database (run with -m integration)",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/db/migrations/*"]
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]

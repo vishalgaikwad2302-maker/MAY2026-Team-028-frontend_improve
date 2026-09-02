@@ -1,0 +1,83 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths: ["Backend/**", ".github/workflows/backend-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["Backend/**", ".github/workflows/backend-ci.yml"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: Backend
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: smartsweep
+          POSTGRES_PASSWORD: smartsweep
+          POSTGRES_DB: smartsweep_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smartsweep -d smartsweep_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://smartsweep:smartsweep@localhost:5432/smartsweep_test
+      JWT_SECRET_KEY: ci-test-secret-not-for-prod
+      ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "Backend/uv.lock"
+
+      - name: Set up Python 3.13
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Format check (black)
+        run: uv run black --check .
+
+      - name: Wait for Postgres
+        run: |
+          for i in $(seq 1 20); do
+            pg_isready -h localhost -p 5432 -U smartsweep && break
+            sleep 1
+          done
+
+      - name: Run migrations (alembic upgrade head)
+        run: uv run alembic upgrade head
+
+      - name: Test (pytest + coverage)
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-${{ github.run_id }}
+          path: Backend/coverage.xml
+          retention-days: 14

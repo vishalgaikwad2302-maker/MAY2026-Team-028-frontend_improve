@@ -1,0 +1,29 @@
+name: OpenAPI Lint
+
+on:
+  pull_request:
+    paths: ["docs/**/openapi.yaml", ".spectral.yaml", ".github/workflows/openapi-lint.yml"]
+  push:
+    branches: [main]
+    paths: ["docs/**/openapi.yaml", ".spectral.yaml"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: openapi-lint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  openapi-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # docs/**/openapi.yaml on purpose: this already covers docs/sprint-1/openapi.yaml
+      # and will pick up docs/sprint-2/openapi.yaml the moment it's added, with no
+      # workflow edit needed.
+      - name: Run Spectral OpenAPI Linter
+        run: npx --yes @stoplight/spectral-cli lint "docs/**/openapi.yaml" --ruleset .spectral.yaml

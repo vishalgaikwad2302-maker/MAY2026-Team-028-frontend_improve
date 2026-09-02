@@ -1,0 +1,4067 @@
+openapi: 3.1.0
+info:
+  title: SmartSweep API
+  version: 0.1.0
+paths:
+  /api/v1/auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Register a new citizen account
+      description: 'Register a new citizen account.
+
+
+        Public self-registration is restricted to Citizens only.
+
+        Crew members are onboarded and provisioned directly by Administrators
+
+        via the operational management portal.'
+      operationId: register_api_v1_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Authenticate user and issue JWT access and refresh tokens
+      description: Authenticate user with email and password.
+      operationId: login_api_v1_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - Auth
+      summary: Refresh access token using valid refresh token
+      description: Issue new token pair using a valid refresh token.
+      operationId: refresh_token_api_v1_auth_refresh_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/me:
+    get:
+      tags:
+      - Auth
+      summary: Get profile of current logged-in user
+      description: Return currently authenticated user details.
+      operationId: get_me_api_v1_auth_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+      security:
+      - HTTPBearer: []
+  /api/v1/auth/admin-only:
+    get:
+      tags:
+      - Auth
+      summary: Admin-restricted endpoint for role authorization checks
+      description: Endpoint accessible only by Admin role.
+      operationId: admin_only_check_api_v1_auth_admin_only_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Admin Only Check Api V1 Auth Admin Only Get
+      security:
+      - HTTPBearer: []
+  /api/v1/auth/crew-only:
+    get:
+      tags:
+      - Auth
+      summary: Crew and Admin restricted endpoint
+      description: Endpoint accessible by Crew and Admin roles.
+      operationId: crew_only_check_api_v1_auth_crew_only_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Crew Only Check Api V1 Auth Crew Only Get
+      security:
+      - HTTPBearer: []
+  /api/v1/wards:
+    get:
+      tags:
+      - Wards
+      summary: List Wards
+      operationId: list_wards_api_v1_wards_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WardRead'
+                type: array
+                title: Response List Wards Api V1 Wards Get
+  /api/v1/wards/me:
+    get:
+      tags:
+      - Wards
+      summary: Get My Ward
+      operationId: get_my_ward_api_v1_wards_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardRead'
+      security:
+      - HTTPBearer: []
+  /api/v1/wards/{ward_id}:
+    get:
+      tags:
+      - Wards
+      summary: Get Ward
+      operationId: get_ward_api_v1_wards__ward_id__get
+      parameters:
+      - name: ward_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ward Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints:
+    post:
+      tags:
+      - Complaints
+      summary: Create Complaint
+      operationId: create_complaint_api_v1_complaints_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintSubmit'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Complaints
+      summary: List Complaints
+      operationId: list_complaints_api_v1_complaints_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Search
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      - name: complaint_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintType'
+          - type: 'null'
+          title: Complaint Type
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintCategory'
+          - type: 'null'
+          title: Category
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ComplaintRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/high-risk:
+    get:
+      tags:
+      - Complaints
+      summary: High Risk Complaints
+      operationId: high_risk_complaints_api_v1_complaints_high_risk_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ComplaintRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/upload-photo:
+    post:
+      tags:
+      - Complaints
+      summary: Upload Complaint Photo
+      operationId: upload_complaint_photo_api_v1_complaints_upload_photo_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_complaint_photo_api_v1_complaints_upload_photo_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Upload Complaint Photo Api V1 Complaints Upload Photo
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/complaints/{complaint_id}/photo:
+    post:
+      tags:
+      - Complaints
+      summary: Attach Complaint Photo
+      description: Validate and attach an evidence photo to an existing complaint.
+      operationId: attach_complaint_photo_api_v1_complaints__complaint_id__photo_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_attach_complaint_photo_api_v1_complaints__complaint_id__photo_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/duplicate-check:
+    post:
+      tags:
+      - Complaints
+      summary: Duplicate Check
+      description: Return advisory matches for a complaint draft before submission.
+      operationId: duplicate_check_api_v1_complaints_duplicate_check_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DuplicateCheckRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties: true
+                  type: object
+                type: array
+                title: Response Duplicate Check Api V1 Complaints Duplicate Check
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/complaints/{complaint_id}:
+    get:
+      tags:
+      - Complaints
+      summary: Get Complaint
+      operationId: get_complaint_api_v1_complaints__complaint_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Complaints
+      summary: Update Complaint
+      operationId: update_complaint_api_v1_complaints__complaint_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/status:
+    patch:
+      tags:
+      - Complaints
+      summary: Change Complaint Status
+      operationId: change_complaint_status_api_v1_complaints__complaint_id__status_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_change_complaint_status_api_v1_complaints__complaint_id__status_patch'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/verify:
+    patch:
+      tags:
+      - Complaints
+      summary: Verify Complaint
+      operationId: verify_complaint_api_v1_complaints__complaint_id__verify_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/ComplaintVerify'
+              - type: 'null'
+              title: Verify In
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/close:
+    patch:
+      tags:
+      - Complaints
+      summary: Close Complaint
+      operationId: close_complaint_api_v1_complaints__complaint_id__close_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/ComplaintClose'
+              - type: 'null'
+              title: Close In
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/cancel:
+    post:
+      tags:
+      - Complaints
+      summary: Cancel Complaint
+      operationId: cancel_complaint_api_v1_complaints__complaint_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/history:
+    get:
+      tags:
+      - Complaints
+      summary: Complaint History
+      operationId: complaint_history_api_v1_complaints__complaint_id__history_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComplaintStatusHistoryRead'
+                title: Response Complaint History Api V1 Complaints  Complaint Id  History
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/feedback:
+    post:
+      tags:
+      - Complaints
+      summary: Submit Complaint Feedback
+      operationId: submit_complaint_feedback_api_v1_complaints__complaint_id__feedback_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Complaints
+      summary: Get Complaint Feedback
+      operationId: get_complaint_feedback_api_v1_complaints__complaint_id__feedback_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/classify:
+    post:
+      tags:
+      - Complaints
+      summary: Classify Complaint
+      description: Classify a complaint's hazard category via Claude, falling back
+        to keyword matching.
+      operationId: classify_complaint_api_v1_complaints__complaint_id__classify_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintClassifyRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/complaints/{complaint_id}/duplicates:
+    get:
+      tags:
+      - Complaints
+      summary: Get Duplicates
+      operationId: get_duplicates_api_v1_complaints__complaint_id__duplicates_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: complaint_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Complaint Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Duplicates Api V1 Complaints  Complaint Id  Duplicates
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks:
+    get:
+      tags:
+      - Tasks
+      summary: List Tasks
+      operationId: list_tasks_api_v1_tasks_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TaskRead'
+                type: array
+                title: Response List Tasks Api V1 Tasks Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - Tasks
+      summary: Create Task
+      operationId: create_task_api_v1_tasks_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/tasks/{task_id}:
+    get:
+      tags:
+      - Tasks
+      summary: Get Task
+      operationId: get_task_api_v1_tasks__task_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Tasks
+      summary: Update Task
+      operationId: update_task_api_v1_tasks__task_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_id}/complete:
+    post:
+      tags:
+      - Tasks
+      summary: Complete Task
+      operationId: complete_task_api_v1_tasks__task_id__complete_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/TaskComplete'
+              - type: 'null'
+              title: Payload
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tasks/{task_id}/cancel:
+    post:
+      tags:
+      - Tasks
+      summary: Cancel Task
+      operationId: cancel_task_api_v1_tasks__task_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/resources/workers:
+    get:
+      tags:
+      - Resources
+      summary: List Workers
+      operationId: list_workers_api_v1_resources_workers_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WorkerRead'
+                type: array
+                title: Response List Workers Api V1 Resources Workers Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - Resources
+      summary: Onboard a new field worker with login credentials
+      operationId: create_worker_api_v1_resources_workers_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/resources/workers/{worker_id}/status:
+    patch:
+      tags:
+      - Resources
+      summary: Update Worker Status
+      operationId: update_worker_status_api_v1_resources_workers__worker_id__status_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: worker_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Worker Id
+      - name: status_value
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/WorkerStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/resources/vehicles:
+    get:
+      tags:
+      - Resources
+      summary: List Vehicles
+      operationId: list_vehicles_api_v1_resources_vehicles_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VehicleRead'
+                type: array
+                title: Response List Vehicles Api V1 Resources Vehicles Get
+      security:
+      - HTTPBearer: []
+  /api/v1/resources/vehicles/{vehicle_id}/status:
+    patch:
+      tags:
+      - Resources
+      summary: Update Vehicle Status
+      operationId: update_vehicle_status_api_v1_resources_vehicles__vehicle_id__status_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: vehicle_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Vehicle Id
+      - name: status_value
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/VehicleStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/resources/equipment:
+    get:
+      tags:
+      - Resources
+      summary: List Equipment
+      operationId: list_equipment_api_v1_resources_equipment_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EquipmentRead'
+                type: array
+                title: Response List Equipment Api V1 Resources Equipment Get
+      security:
+      - HTTPBearer: []
+  /api/v1/resources/equipment/{equipment_id}/status:
+    patch:
+      tags:
+      - Resources
+      summary: Update Equipment Status
+      operationId: update_equipment_status_api_v1_resources_equipment__equipment_id__status_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: equipment_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Equipment Id
+      - name: status_value
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/EquipmentStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/notifications:
+    get:
+      tags:
+      - Notifications
+      summary: List Notifications
+      operationId: list_notifications_api_v1_notifications_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: unread_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Unread Only
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_NotificationRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/notifications/{notification_id}/read:
+    patch:
+      tags:
+      - Notifications
+      summary: Mark Notification Read
+      operationId: mark_notification_read_api_v1_notifications__notification_id__read_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Notification Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/notifications/read-all:
+    post:
+      tags:
+      - Notifications
+      summary: Mark All Notifications Read
+      operationId: mark_all_notifications_read_api_v1_notifications_read_all_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: integer
+                type: object
+                title: Response Mark All Notifications Read Api V1 Notifications Read
+                  All Post
+      security:
+      - HTTPBearer: []
+  /api/v1/transparency:
+    get:
+      tags:
+      - Transparency
+      summary: List Transparency Posts
+      operationId: list_transparency_posts_api_v1_transparency_get
+      parameters:
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_TransparencyPostRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Transparency
+      summary: Create Transparency Post
+      operationId: create_transparency_post_api_v1_transparency_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransparencyPostCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransparencyPostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/transparency/{post_id}:
+    get:
+      tags:
+      - Transparency
+      summary: Get Transparency Post
+      operationId: get_transparency_post_api_v1_transparency__post_id__get
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransparencyPostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/transparency/{post_id}/applaud:
+    post:
+      tags:
+      - Transparency
+      summary: Applaud Transparency Post
+      operationId: applaud_transparency_post_api_v1_transparency__post_id__applaud_post
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransparencyPostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/transparency/{post_id}/comments:
+    get:
+      tags:
+      - Transparency
+      summary: List Post Comments
+      operationId: list_post_comments_api_v1_transparency__post_id__comments_get
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostCommentRead'
+                title: Response List Post Comments Api V1 Transparency  Post Id  Comments
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Transparency
+      summary: Create Post Comment
+      operationId: create_post_comment_api_v1_transparency__post_id__comments_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCommentCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostCommentRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/feed:
+    get:
+      tags:
+      - Feed
+      summary: List Feed Posts
+      description: Return paginated public feed posts with optional ward filter.
+      operationId: list_feed_posts_api_v1_feed_get
+      parameters:
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_TransparencyPostRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/feed/{post_id}:
+    get:
+      tags:
+      - Feed
+      summary: Get Feed Post
+      description: Return a single feed post by ID.
+      operationId: get_feed_post_api_v1_feed__post_id__get
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransparencyPostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/feed/{post_id}/applaud:
+    post:
+      tags:
+      - Feed
+      summary: Applaud Feed Post
+      description: Public endpoint to bump applaud counter on a feed post.
+      operationId: applaud_feed_post_api_v1_feed__post_id__applaud_post
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransparencyPostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/feed/{post_id}/comments:
+    get:
+      tags:
+      - Feed
+      summary: List Feed Post Comments
+      description: Return list of comments on a feed post.
+      operationId: list_feed_post_comments_api_v1_feed__post_id__comments_get
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostCommentRead'
+                title: Response List Feed Post Comments Api V1 Feed  Post Id  Comments
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Feed
+      summary: Create Feed Post Comment
+      description: Add a comment to a feed post (requires auth).
+      operationId: create_feed_post_comment_api_v1_feed__post_id__comments_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Post Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCommentCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostCommentRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reports/trends:
+    get:
+      tags:
+      - Reports
+      summary: Get Report Trends
+      description: Return status breakdown, hazard breakdown, and time series trends
+        (backs ReportsTrends.jsx).
+      operationId: get_report_trends_api_v1_reports_trends_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsTrendsRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reports/performance:
+    get:
+      tags:
+      - Reports
+      summary: Get Report Performance
+      description: Return average resolution days, ward performance, and crew performance.
+      operationId: get_report_performance_api_v1_reports_performance_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsPerformanceRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reports/public:
+    get:
+      tags:
+      - Reports
+      summary: Get Public Report Stats
+      description: Return public high-level cleanup statistics.
+      operationId: get_public_report_stats_api_v1_reports_public_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsPublicRead'
+  /api/v1/bulk-pickups:
+    post:
+      tags:
+      - Bulk Pickups
+      summary: Create Bulk Pickup
+      operationId: create_bulk_pickup_api_v1_bulk_pickups_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPickupCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkPickupRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Bulk Pickups
+      summary: List Bulk Pickups
+      operationId: list_bulk_pickups_api_v1_bulk_pickups_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status_filter
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status Filter
+      - name: ward_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_BulkPickupRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bulk-pickups/{pickup_id}:
+    get:
+      tags:
+      - Bulk Pickups
+      summary: Get Bulk Pickup
+      operationId: get_bulk_pickup_api_v1_bulk_pickups__pickup_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pickup_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Pickup Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkPickupRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Bulk Pickups
+      summary: Update Bulk Pickup
+      operationId: update_bulk_pickup_api_v1_bulk_pickups__pickup_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pickup_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Pickup Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPickupUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkPickupRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bulk-pickups/{pickup_id}/cancel:
+    post:
+      tags:
+      - Bulk Pickups
+      summary: Cancel Bulk Pickup
+      operationId: cancel_bulk_pickup_api_v1_bulk_pickups__pickup_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pickup_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Pickup Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkPickupRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bulk-pickups/{pickup_id}/assign:
+    post:
+      tags:
+      - Bulk Pickups
+      summary: Assign Bulk Pickup
+      operationId: assign_bulk_pickup_api_v1_bulk_pickups__pickup_id__assign_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pickup_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Pickup Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPickupAssign'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkPickupRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/schedule/reminders:
+    get:
+      tags:
+      - Collection Schedule
+      summary: Get Schedule Reminders
+      operationId: get_schedule_reminders_api_v1_schedule_reminders_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ward_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Ward Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleReminderRead'
+                title: Response Get Schedule Reminders Api V1 Schedule Reminders Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/schedule:
+    get:
+      tags:
+      - Collection Schedule
+      summary: Get Ward Schedule
+      operationId: get_ward_schedule_api_v1_schedule_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ward_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Ward Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionScheduleRead'
+                title: Response Get Ward Schedule Api V1 Schedule Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Collection Schedule
+      summary: Create Schedule Row
+      operationId: create_schedule_row_api_v1_schedule_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionScheduleCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionScheduleRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/schedule/{schedule_id}:
+    patch:
+      tags:
+      - Collection Schedule
+      summary: Update Schedule Row
+      operationId: update_schedule_row_api_v1_schedule__schedule_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionScheduleUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionScheduleRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Collection Schedule
+      summary: Delete Schedule Row
+      operationId: delete_schedule_row_api_v1_schedule__schedule_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Schedule Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    Body_attach_complaint_photo_api_v1_complaints__complaint_id__photo_post:
+      properties:
+        photo:
+          type: string
+          format: binary
+          title: Photo
+      type: object
+      required:
+      - photo
+      title: Body_attach_complaint_photo_api_v1_complaints__complaint_id__photo_post
+    Body_change_complaint_status_api_v1_complaints__complaint_id__status_patch:
+      properties:
+        status_value:
+          $ref: '#/components/schemas/ComplaintStatus'
+      type: object
+      required:
+      - status_value
+      title: Body_change_complaint_status_api_v1_complaints__complaint_id__status_patch
+    Body_upload_complaint_photo_api_v1_complaints_upload_photo_post:
+      properties:
+        photo:
+          type: string
+          format: binary
+          title: Photo
+      type: object
+      required:
+      - photo
+      title: Body_upload_complaint_photo_api_v1_complaints_upload_photo_post
+    BulkPickupAssign:
+      properties:
+        worker_id:
+          type: integer
+          title: Worker Id
+        vehicle_id:
+          type: integer
+          title: Vehicle Id
+      type: object
+      required:
+      - worker_id
+      - vehicle_id
+      title: BulkPickupAssign
+      description: Payload for dispatching a crew member and vehicle to a pickup.
+    BulkPickupCategory:
+      type: string
+      enum:
+      - general
+      - e_waste
+      - construction_debris
+      - scrap_metal
+      title: BulkPickupCategory
+      description: Waste category. Mirrors the ORM enum.
+    BulkPickupCreate:
+      properties:
+        category:
+          $ref: '#/components/schemas/BulkPickupCategory'
+          default: general
+        load_band:
+          $ref: '#/components/schemas/BulkPickupLoadBand'
+        address:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Address
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        latitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Latitude
+        longitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Longitude
+        preferred_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Preferred Date
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - load_band
+      - address
+      title: BulkPickupCreate
+      description: Payload for a citizen requesting a bulk pickup.
+    BulkPickupLoadBand:
+      type: string
+      enum:
+      - small
+      - medium
+      - large
+      - extra_large
+      title: BulkPickupLoadBand
+      description: Load size. Mirrors the ORM enum.
+    BulkPickupRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        requested_by_user_id:
+          type: integer
+          title: Requested By User Id
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        category:
+          type: string
+          title: Category
+        load_band:
+          type: string
+          title: Load Band
+        address:
+          type: string
+          title: Address
+        latitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Latitude
+        longitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Longitude
+        preferred_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Preferred Date
+        status:
+          type: string
+          title: Status
+        assigned_vehicle_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned Vehicle Id
+        assigned_worker_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned Worker Id
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        scheduled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Scheduled At
+        collected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Collected At
+        cancelled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelled At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - requested_by_user_id
+      - category
+      - load_band
+      - address
+      - status
+      - created_at
+      - updated_at
+      title: BulkPickupRead
+      description: Bulk pickup response schema.
+    BulkPickupStatus:
+      type: string
+      enum:
+      - requested
+      - scheduled
+      - collected
+      - cancelled
+      title: BulkPickupStatus
+      description: Lifecycle states exposed through the API. Mirrors the ORM enum.
+    BulkPickupUpdate:
+      properties:
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/BulkPickupStatus'
+          - type: 'null'
+        assigned_vehicle_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned Vehicle Id
+        assigned_worker_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned Worker Id
+        scheduled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Scheduled At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      title: BulkPickupUpdate
+      description: Payload for crew/admin managing a pickup's lifecycle.
+    CollectionFrequency:
+      type: string
+      enum:
+      - weekly
+      - biweekly
+      - monthly
+      title: CollectionFrequency
+      description: How often a ward's regular collection slot repeats. Mirrors the
+        ORM enum.
+    CollectionScheduleCreate:
+      properties:
+        ward_id:
+          type: integer
+          title: Ward Id
+        frequency:
+          $ref: '#/components/schemas/CollectionFrequency'
+          default: weekly
+        day_of_week:
+          anyOf:
+          - type: integer
+            maximum: 6.0
+            minimum: 0.0
+          - type: 'null'
+          title: Day Of Week
+        week_of_month:
+          anyOf:
+          - type: integer
+            maximum: 3.0
+            minimum: 0.0
+          - type: 'null'
+          title: Week Of Month
+        time_slot:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Time Slot
+        is_exception:
+          type: boolean
+          title: Is Exception
+          default: false
+        exception_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Exception Date
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - ward_id
+      title: CollectionScheduleCreate
+      description: Payload for an admin creating a regular slot or a one-off exception.
+    CollectionScheduleRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        ward_id:
+          type: integer
+          title: Ward Id
+        frequency:
+          type: string
+          title: Frequency
+        day_of_week:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Day Of Week
+        week_of_month:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Week Of Month
+        time_slot:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Time Slot
+        is_exception:
+          type: boolean
+          title: Is Exception
+        exception_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Exception Date
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - ward_id
+      - frequency
+      - is_exception
+      - created_at
+      - updated_at
+      title: CollectionScheduleRead
+      description: Collection schedule response schema.
+    CollectionScheduleUpdate:
+      properties:
+        frequency:
+          anyOf:
+          - $ref: '#/components/schemas/CollectionFrequency'
+          - type: 'null'
+        day_of_week:
+          anyOf:
+          - type: integer
+            maximum: 6.0
+            minimum: 0.0
+          - type: 'null'
+          title: Day Of Week
+        week_of_month:
+          anyOf:
+          - type: integer
+            maximum: 3.0
+            minimum: 0.0
+          - type: 'null'
+          title: Week Of Month
+        time_slot:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Time Slot
+        is_exception:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Exception
+        exception_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Exception Date
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      title: CollectionScheduleUpdate
+      description: Payload for an admin editing a schedule row.
+    ComplaintCategory:
+      type: string
+      enum:
+      - None
+      - Foul Smell
+      - Overflowing Bin
+      - Mosquito Breeding
+      - Risk to Children
+      title: ComplaintCategory
+      description: Hazard classification. Mirrors the ORM enum (US-28/29/30).
+    ComplaintClassifyRead:
+      properties:
+        complaint:
+          $ref: '#/components/schemas/ComplaintRead'
+        category:
+          $ref: '#/components/schemas/ComplaintCategory'
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        source:
+          type: string
+          enum:
+          - llm
+          - heuristic
+          title: Source
+        confidence:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Confidence
+        reasoning:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reasoning
+      type: object
+      required:
+      - complaint
+      - category
+      - source
+      title: ComplaintClassifyRead
+      description: Response for POST /complaints/{id}/classify (US-28/29/30).
+    ComplaintClose:
+      properties:
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+          description: Confirmation notes by supervisor
+        after_photo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: After Photo Url
+          description: Optional after photo URL
+      type: object
+      title: ComplaintClose
+      description: Payload for closing a complaint (Supervisor confirm).
+    ComplaintRead:
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Title
+        description:
+          type: string
+          minLength: 1
+          title: Description
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        category:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintCategory'
+          - type: 'null'
+        complaint_type:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintType'
+          - type: 'null'
+        priority:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Priority
+        address:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Address
+        latitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Latitude
+        longitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Longitude
+        photo_url:
+          anyOf:
+          - type: string
+            maxLength: 10000000
+          - type: 'null'
+          title: Photo Url
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        id:
+          type: integer
+          title: Id
+        reported_by_user_id:
+          type: integer
+          title: Reported By User Id
+        status:
+          $ref: '#/components/schemas/ComplaintStatus'
+        resolved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Resolved At
+        cancelled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelled At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - title
+      - description
+      - id
+      - reported_by_user_id
+      - status
+      - created_at
+      - updated_at
+      title: ComplaintRead
+      description: Complaint response schema.
+    ComplaintStatus:
+      type: string
+      enum:
+      - pending
+      - in_progress
+      - resolved
+      - verified
+      - closed
+      - cancelled
+      title: ComplaintStatus
+      description: Complaint lifecycle values exposed through the API.
+    ComplaintStatusHistoryRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        complaint_id:
+          type: integer
+          title: Complaint Id
+        from_status:
+          type: string
+          title: From Status
+        to_status:
+          type: string
+          title: To Status
+        changed_by_user_id:
+          type: integer
+          title: Changed By User Id
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - complaint_id
+      - from_status
+      - to_status
+      - changed_by_user_id
+      - created_at
+      title: ComplaintStatusHistoryRead
+      description: Complaint status audit trail response schema.
+    ComplaintSubmit:
+      properties:
+        location:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Location
+        description:
+          type: string
+          minLength: 1
+          title: Description
+        hazard:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintCategory'
+          - type: 'null'
+        complaint_type:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintType'
+          - type: 'null'
+        photo:
+          anyOf:
+          - type: string
+            maxLength: 10000000
+          - type: 'null'
+          title: Photo
+        coords:
+          anyOf:
+          - additionalProperties:
+              type: number
+            type: object
+          - type: 'null'
+          title: Coords
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      type: object
+      required:
+      - location
+      - description
+      title: ComplaintSubmit
+      description: Payload coming directly from the citizen report form.
+    ComplaintType:
+      type: string
+      enum:
+      - overflow
+      - delay
+      - extra_collection
+      title: ComplaintType
+      description: 'Community-facing complaint category (S2-A18).
+
+
+        Separate from ``category`` (the hazard classification field). Pydantic
+
+        validates any value outside this set as a 422 automatically.'
+    ComplaintUpdate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Description
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        category:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintCategory'
+          - type: 'null'
+        complaint_type:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintType'
+          - type: 'null'
+        priority:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Priority
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/ComplaintStatus'
+          - type: 'null'
+        address:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Address
+        latitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Latitude
+        longitude:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Longitude
+        photo_url:
+          anyOf:
+          - type: string
+            maxLength: 10000000
+          - type: 'null'
+          title: Photo Url
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+      type: object
+      title: ComplaintUpdate
+      description: Payload for updating a complaint.
+    ComplaintVerify:
+      properties:
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+          description: Review notes by admin
+      type: object
+      title: ComplaintVerify
+      description: Payload for verifying a complaint (Admin review).
+    CrewPerformance:
+      properties:
+        worker_id:
+          type: integer
+          title: Worker Id
+        worker_name:
+          type: string
+          title: Worker Name
+        total_tasks_assigned:
+          type: integer
+          title: Total Tasks Assigned
+        completed_tasks:
+          type: integer
+          title: Completed Tasks
+        completion_rate:
+          type: number
+          title: Completion Rate
+      type: object
+      required:
+      - worker_id
+      - worker_name
+      - total_tasks_assigned
+      - completed_tasks
+      - completion_rate
+      title: CrewPerformance
+    DuplicateCheckRequest:
+      properties:
+        location:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Location
+        description:
+          type: string
+          minLength: 1
+          title: Description
+        coords:
+          anyOf:
+          - additionalProperties:
+              type: number
+            type: object
+          - type: 'null'
+          title: Coords
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+      type: object
+      required:
+      - location
+      - description
+      title: DuplicateCheckRequest
+      description: Draft complaint fields used for an advisory duplicate scan.
+    EquipmentRead:
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Name
+        asset_tag:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Asset Tag
+        description:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Description
+        total_quantity:
+          type: integer
+          minimum: 1.0
+          title: Total Quantity
+          default: 1
+        available_quantity:
+          type: integer
+          minimum: 0.0
+          title: Available Quantity
+          default: 1
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        status:
+          $ref: '#/components/schemas/EquipmentStatus'
+          default: available
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        id:
+          type: integer
+          title: Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - name
+      - id
+      - created_at
+      - updated_at
+      title: EquipmentRead
+      description: Equipment response schema.
+    EquipmentStatus:
+      type: string
+      enum:
+      - available
+      - in_use
+      - maintenance
+      - retired
+      title: EquipmentStatus
+      description: Equipment stock states exposed via the API.
+    FeedbackCreate:
+      properties:
+        rating:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Rating
+          description: Star rating, 1 (worst) to 5 (best).
+        comment:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Comment
+      type: object
+      required:
+      - rating
+      title: FeedbackCreate
+      description: Payload for submitting feedback on a resolved complaint.
+    FeedbackRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        complaint_id:
+          type: integer
+          title: Complaint Id
+        submitted_by_user_id:
+          type: integer
+          title: Submitted By User Id
+        rating:
+          type: integer
+          title: Rating
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - complaint_id
+      - submitted_by_user_id
+      - rating
+      - created_at
+      - updated_at
+      title: FeedbackRead
+      description: Feedback response schema.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HazardCount:
+      properties:
+        hazard:
+          type: string
+          title: Hazard
+        count:
+          type: integer
+          title: Count
+      type: object
+      required:
+      - hazard
+      - count
+      title: HazardCount
+    LoginRequest:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        password:
+          type: string
+          minLength: 1
+          title: Password
+      type: object
+      required:
+      - email
+      - password
+      title: LoginRequest
+      description: Payload for user login.
+    NotificationRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        user_id:
+          type: integer
+          title: User Id
+        type:
+          type: string
+          title: Type
+        title:
+          type: string
+          title: Title
+        message:
+          type: string
+          title: Message
+        related_complaint_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Related Complaint Id
+        is_read:
+          type: boolean
+          title: Is Read
+        read_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Read At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - user_id
+      - type
+      - title
+      - message
+      - is_read
+      - created_at
+      - updated_at
+      title: NotificationRead
+      description: Notification response schema.
+    PageMeta:
+      properties:
+        page:
+          type: integer
+          minimum: 1.0
+          title: Page
+          description: 1-based index of the returned page.
+        page_size:
+          type: integer
+          minimum: 1.0
+          title: Page Size
+          description: Maximum items per page.
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+          description: Total matching rows, ignoring pagination.
+        total_pages:
+          type: integer
+          minimum: 0.0
+          title: Total Pages
+          description: ceil(total / page_size).
+      type: object
+      required:
+      - page
+      - page_size
+      - total
+      - total_pages
+      title: PageMeta
+      description: Pagination counters. ``total_pages`` is derived, never supplied.
+    Page_BulkPickupRead_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/BulkPickupRead'
+          type: array
+          title: Items
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      type: object
+      required:
+      - items
+      - meta
+      title: Page[BulkPickupRead]
+    Page_ComplaintRead_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ComplaintRead'
+          type: array
+          title: Items
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      type: object
+      required:
+      - items
+      - meta
+      title: Page[ComplaintRead]
+    Page_NotificationRead_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/NotificationRead'
+          type: array
+          title: Items
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      type: object
+      required:
+      - items
+      - meta
+      title: Page[NotificationRead]
+    Page_TransparencyPostRead_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/TransparencyPostRead'
+          type: array
+          title: Items
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+      type: object
+      required:
+      - items
+      - meta
+      title: Page[TransparencyPostRead]
+    PostCommentCreate:
+      properties:
+        comment:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Comment
+      type: object
+      required:
+      - comment
+      title: PostCommentCreate
+      description: Payload for commenting on a transparency post.
+    PostCommentRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        post_id:
+          type: integer
+          title: Post Id
+        user_id:
+          type: integer
+          title: User Id
+        comment:
+          type: string
+          title: Comment
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - post_id
+      - user_id
+      - comment
+      - created_at
+      title: PostCommentRead
+      description: Post comment response schema.
+    RefreshTokenRequest:
+      properties:
+        refresh_token:
+          type: string
+          title: Refresh Token
+      type: object
+      required:
+      - refresh_token
+      title: RefreshTokenRequest
+      description: Payload for refreshing an access token.
+    ReportsPerformanceRead:
+      properties:
+        avg_resolution_days:
+          type: number
+          title: Avg Resolution Days
+        total_resolved:
+          type: integer
+          title: Total Resolved
+        ward_performance:
+          items:
+            $ref: '#/components/schemas/WardPerformance'
+          type: array
+          title: Ward Performance
+        crew_performance:
+          items:
+            $ref: '#/components/schemas/CrewPerformance'
+          type: array
+          title: Crew Performance
+      type: object
+      required:
+      - avg_resolution_days
+      - total_resolved
+      - ward_performance
+      - crew_performance
+      title: ReportsPerformanceRead
+      description: Response payload for GET /reports/performance.
+    ReportsPublicRead:
+      properties:
+        total_complaints:
+          type: integer
+          title: Total Complaints
+        resolved_complaints:
+          type: integer
+          title: Resolved Complaints
+        active_complaints:
+          type: integer
+          title: Active Complaints
+        resolution_rate:
+          type: number
+          title: Resolution Rate
+        avg_resolution_days:
+          type: number
+          title: Avg Resolution Days
+        total_cleanups_completed:
+          type: integer
+          title: Total Cleanups Completed
+        top_wards:
+          items:
+            $ref: '#/components/schemas/TopWardStats'
+          type: array
+          title: Top Wards
+      type: object
+      required:
+      - total_complaints
+      - resolved_complaints
+      - active_complaints
+      - resolution_rate
+      - avg_resolution_days
+      - total_cleanups_completed
+      - top_wards
+      title: ReportsPublicRead
+      description: Response payload for GET /reports/public.
+    ReportsTrendsRead:
+      properties:
+        totals:
+          $ref: '#/components/schemas/TotalsSummary'
+        status_breakdown:
+          items:
+            $ref: '#/components/schemas/StatusCount'
+          type: array
+          title: Status Breakdown
+        hazard_breakdown:
+          items:
+            $ref: '#/components/schemas/HazardCount'
+          type: array
+          title: Hazard Breakdown
+        time_series:
+          items:
+            $ref: '#/components/schemas/TimeSeriesPoint'
+          type: array
+          title: Time Series
+      type: object
+      required:
+      - totals
+      - status_breakdown
+      - hazard_breakdown
+      - time_series
+      title: ReportsTrendsRead
+      description: Response payload for GET /reports/trends.
+    ScheduleReminderRead:
+      properties:
+        schedule_id:
+          type: integer
+          title: Schedule Id
+        ward_id:
+          type: integer
+          title: Ward Id
+        occurrence_date:
+          type: string
+          format: date
+          title: Occurrence Date
+        time_slot:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Time Slot
+        is_exception:
+          type: boolean
+          title: Is Exception
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - schedule_id
+      - ward_id
+      - occurrence_date
+      - is_exception
+      title: ScheduleReminderRead
+      description: One computed upcoming-pickup reminder for a ward.
+    StatusCount:
+      properties:
+        status:
+          type: string
+          title: Status
+        count:
+          type: integer
+          title: Count
+      type: object
+      required:
+      - status
+      - count
+      title: StatusCount
+    TaskComplete:
+      properties:
+        completion_photo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Completion Photo Url
+          description: URL of photo after task completion
+        waste_removed:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Waste Removed
+          description: Quantity or description of waste removed (e.g. '1.4 Tons')
+        resolution_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution Notes
+          description: Notes on task completion
+      type: object
+      title: TaskComplete
+      description: Payload for completing a task.
+    TaskCreate:
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        complaint_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Complaint Id
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        vehicle_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Vehicle Id
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          default: assigned
+        worker_ids:
+          items:
+            type: integer
+          type: array
+          title: Worker Ids
+        equipment_ids:
+          items:
+            type: integer
+          type: array
+          title: Equipment Ids
+        assigned_by_user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned By User Id
+      type: object
+      required:
+      - title
+      title: TaskCreate
+      description: Payload for creating a task.
+    TaskRead:
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        complaint_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Complaint Id
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        vehicle_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Vehicle Id
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          default: assigned
+        id:
+          type: integer
+          title: Id
+        assigned_by_user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Assigned By User Id
+        resolution_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution Notes
+        completion_photo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Completion Photo Url
+        waste_removed:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Waste Removed
+        assigned_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Assigned At
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        worker_ids:
+          items:
+            type: integer
+          type: array
+          title: Worker Ids
+        equipment_ids:
+          items:
+            type: integer
+          type: array
+          title: Equipment Ids
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - title
+      - id
+      - created_at
+      - updated_at
+      title: TaskRead
+      description: Task response schema.
+    TaskStatus:
+      type: string
+      enum:
+      - assigned
+      - in_progress
+      - completed
+      - cancelled
+      title: TaskStatus
+      description: Assignment lifecycle states exposed through the API.
+    TaskUpdate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        complaint_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Complaint Id
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        vehicle_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Vehicle Id
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/TaskStatus'
+          - type: 'null'
+        worker_ids:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Worker Ids
+        equipment_ids:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Equipment Ids
+        resolution_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution Notes
+      type: object
+      title: TaskUpdate
+      description: Payload for updating a task.
+    TimeSeriesPoint:
+      properties:
+        date:
+          type: string
+          title: Date
+        count:
+          type: integer
+          title: Count
+      type: object
+      required:
+      - date
+      - count
+      title: TimeSeriesPoint
+    Token:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        refresh_token:
+          type: string
+          title: Refresh Token
+        token_type:
+          type: string
+          title: Token Type
+          default: bearer
+      type: object
+      required:
+      - access_token
+      - refresh_token
+      title: Token
+      description: Token response schema containing access and refresh tokens.
+    TopWardStats:
+      properties:
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        name:
+          type: string
+          title: Name
+        resolved_count:
+          type: integer
+          title: Resolved Count
+      type: object
+      required:
+      - name
+      - resolved_count
+      title: TopWardStats
+    TotalsSummary:
+      properties:
+        total:
+          type: integer
+          title: Total
+        pending:
+          type: integer
+          title: Pending
+        in_progress:
+          type: integer
+          title: In Progress
+        resolved:
+          type: integer
+          title: Resolved
+        cancelled:
+          type: integer
+          title: Cancelled
+      type: object
+      required:
+      - total
+      - pending
+      - in_progress
+      - resolved
+      - cancelled
+      title: TotalsSummary
+    TransparencyPostCreate:
+      properties:
+        complaint_id:
+          type: integer
+          title: Complaint Id
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        before_photo_url:
+          anyOf:
+          - type: string
+            maxLength: 2048
+          - type: 'null'
+          title: Before Photo Url
+        after_photo_url:
+          anyOf:
+          - type: string
+            maxLength: 2048
+          - type: 'null'
+          title: After Photo Url
+      type: object
+      required:
+      - complaint_id
+      - title
+      title: TransparencyPostCreate
+      description: Payload for crew/admin publishing a cleanup record for a resolved
+        complaint.
+    TransparencyPostRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        complaint_id:
+          type: integer
+          title: Complaint Id
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        title:
+          type: string
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        before_photo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Before Photo Url
+        after_photo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: After Photo Url
+        applause_count:
+          type: integer
+          title: Applause Count
+        posted_by_user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Posted By User Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - complaint_id
+      - title
+      - applause_count
+      - created_at
+      - updated_at
+      title: TransparencyPostRead
+      description: Transparency post response schema.
+    UserCreate:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        full_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Full Name
+        role:
+          $ref: '#/components/schemas/UserRole'
+          default: citizen
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        password:
+          type: string
+          maxLength: 128
+          minLength: 6
+          title: Password
+      type: object
+      required:
+      - email
+      - full_name
+      - password
+      title: UserCreate
+      description: Payload for user registration or creation.
+    UserRead:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        full_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Full Name
+        role:
+          $ref: '#/components/schemas/UserRole'
+          default: citizen
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        id:
+          type: integer
+          title: Id
+        is_active:
+          type: boolean
+          title: Is Active
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - email
+      - full_name
+      - id
+      - is_active
+      - created_at
+      - updated_at
+      title: UserRead
+      description: User response schema.
+    UserRole:
+      type: string
+      enum:
+      - citizen
+      - crew
+      - admin
+      title: UserRole
+      description: User roles for Role-Based Access Control (RBAC).
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VehicleRead:
+      properties:
+        plate_number:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Plate Number
+        model_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Model Name
+        vehicle_type:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Vehicle Type
+        capacity_tons:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Capacity Tons
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        driver_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Driver Name
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+          default: available
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        id:
+          type: integer
+          title: Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - plate_number
+      - model_name
+      - id
+      - created_at
+      - updated_at
+      title: VehicleRead
+      description: Vehicle response schema.
+    VehicleStatus:
+      type: string
+      enum:
+      - available
+      - en_route
+      - on_site
+      - maintenance
+      title: VehicleStatus
+      description: Fleet availability states exposed via the API.
+    WardPerformance:
+      properties:
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        ward_name:
+          type: string
+          title: Ward Name
+        total_complaints:
+          type: integer
+          title: Total Complaints
+        resolved_complaints:
+          type: integer
+          title: Resolved Complaints
+        avg_resolution_days:
+          type: number
+          title: Avg Resolution Days
+        resolution_rate:
+          type: number
+          title: Resolution Rate
+      type: object
+      required:
+      - ward_name
+      - total_complaints
+      - resolved_complaints
+      - avg_resolution_days
+      - resolution_rate
+      title: WardPerformance
+    WardRead:
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Name
+        code:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Code
+        zone:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Zone
+        description:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Description
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        id:
+          type: integer
+          title: Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - name
+      - id
+      - created_at
+      - updated_at
+      title: WardRead
+      description: Ward response schema.
+    WorkerCreate:
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Full Name
+        employee_code:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Employee Code
+        email:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Phone
+        role_title:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Role Title
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        status:
+          $ref: '#/components/schemas/WorkerStatus'
+          default: available
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        password:
+          anyOf:
+          - type: string
+            minLength: 6
+          - type: 'null'
+          title: Password
+      type: object
+      required:
+      - full_name
+      title: WorkerCreate
+      description: Payload for onboarding a worker (with optional user credentials).
+    WorkerRead:
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Full Name
+        employee_code:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Employee Code
+        email:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Phone
+        role_title:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Role Title
+        ward_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Ward Id
+        status:
+          $ref: '#/components/schemas/WorkerStatus'
+          default: available
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        id:
+          type: integer
+          title: Id
+        user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: User Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - full_name
+      - id
+      - created_at
+      - updated_at
+      title: WorkerRead
+      description: Worker response schema.
+    WorkerStatus:
+      type: string
+      enum:
+      - available
+      - assigned
+      - off_duty
+      - unavailable
+      title: WorkerStatus
+      description: Crew availability states exposed via the API.
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
