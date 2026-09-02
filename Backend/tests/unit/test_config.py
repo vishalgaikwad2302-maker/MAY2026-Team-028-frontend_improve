@@ -88,6 +88,16 @@ class TestEnvironmentBehaviour:
         url = "postgresql+psycopg://u:p@localhost:5432/db"
         assert make_settings(database_url=url).is_sqlite is False
 
+    def test_postgres_url_normalized_to_psycopg(self) -> None:
+        raw_postgres = "postgres://user:pass@host:5432/dbname"
+        settings = make_settings(database_url=raw_postgres)
+        assert settings.database_url == "postgresql+psycopg://user:pass@host:5432/dbname"
+
+    def test_postgresql_plain_url_normalized_to_psycopg(self) -> None:
+        raw_postgresql = "postgresql://user:pass@host:5432/dbname"
+        settings = make_settings(database_url=raw_postgresql)
+        assert settings.database_url == "postgresql+psycopg://user:pass@host:5432/dbname"
+
     def test_unknown_env_is_rejected(self) -> None:
         """Literal typing catches `ENV=production` (we spell it `prod`)."""
         with pytest.raises(ValidationError):

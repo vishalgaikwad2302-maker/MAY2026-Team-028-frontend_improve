@@ -18,8 +18,14 @@ connect_args: dict[str, Any] = {}
 if settings.is_sqlite:
     connect_args["check_same_thread"] = False
 
+db_url = settings.database_url.strip().strip("'\"")
+if db_url.startswith("postgres://"):
+    db_url = "postgresql+psycopg://" + db_url[len("postgres://"):]
+elif db_url.startswith("postgresql://"):
+    db_url = "postgresql+psycopg://" + db_url[len("postgresql://"):]
+
 engine = create_engine(
-    settings.database_url,
+    db_url,
     connect_args=connect_args,
     echo=settings.db_echo,
 )

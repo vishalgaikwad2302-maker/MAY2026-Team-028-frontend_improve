@@ -20,6 +20,7 @@ dependencies = [
     "sqlalchemy>=2.0.36,<2.1",
     "alembic>=1.14,<1.15",
     "psycopg[binary]>=3.2,<3.3", # psycopg 3, not psycopg2: SQLAlchemy 2.0 native
+    "psycopg2-binary>=2.9.9,<3", # fallback postgres driver for Render/Heroku environments
 
     # --- Validation / settings ---
     "pydantic>=2.10,<3",
@@ -50,6 +51,10 @@ dev = [
 # ---------------------------------------------------------------------------
 # Tooling
 # ---------------------------------------------------------------------------
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 100

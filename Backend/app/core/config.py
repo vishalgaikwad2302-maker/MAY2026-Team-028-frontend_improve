@@ -131,6 +131,17 @@ class Settings(BaseSettings):
         return self
 
     @model_validator(mode="after")
+    def _normalize_database_url(self) -> "Settings":
+        """Normalize Postgres URLs (e.g. from Render/Heroku) to SQLAlchemy 2.0 psycopg3 dialect."""
+        url = self.database_url.strip().strip("'\"")
+        if url.startswith("postgres://"):
+            url = "postgresql+psycopg://" + url[len("postgres://"):]
+        elif url.startswith("postgresql://"):
+            url = "postgresql+psycopg://" + url[len("postgresql://"):]
+        self.database_url = url
+        return self
+
+    @model_validator(mode="after")
     def _page_size_bounds_are_coherent(self) -> "Settings":
         if self.default_page_size > self.max_page_size:
             raise ValueError("DEFAULT_PAGE_SIZE cannot exceed MAX_PAGE_SIZE")
