@@ -261,3 +261,32 @@ export async function refreshTokenApi(refreshToken) {
 
   return { success: false };
 }
+
+// Transparency / Public Feed API calls
+export async function getFeedPostsApi(page = 1, pageSize = 30) {
+  return await apiFetch(`/transparency?page=${page}&page_size=${pageSize}`);
+}
+
+export async function createTransparencyPostApi(postData) {
+  return await apiFetch("/transparency", {
+    method: "POST",
+    body: JSON.stringify(postData),
+  });
+}
+
+export async function applaudTransparencyPostApi(postId) {
+  return await apiFetch(`/transparency/${postId}/applaud`, {
+    method: "POST",
+  });
+}
+
+export async function addTransparencyCommentApi(postId, commentText) {
+  return await apiFetch(`/transparency/${postId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ comment: commentText }),
+  });
+}
+
+export async function getTransparencyCommentsApi(postId) {
+  return await apiFetch(`/transparency/${postId}/comments`);
+}

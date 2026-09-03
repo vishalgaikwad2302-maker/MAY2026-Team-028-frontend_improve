@@ -10,7 +10,8 @@ public, anonymous counter bump.
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db, require_role
+from app.api.deps import get_current_user, get_db
+from app.core.exceptions import PermissionDeniedError
 from app.models.user import User, UserRole
 from app.schemas.common import Page
 from app.schemas.transparency import (
@@ -46,13 +47,19 @@ def list_transparency_posts(
     "",
     response_model=TransparencyPostRead,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_role(UserRole.CREW, UserRole.ADMIN))],
 )
 def create_transparency_post(
     post_in: TransparencyPostCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> TransparencyPostRead:
+    if post_in.complaint_id is not None and current_user.role not in (
+        UserRole.CREW.value,
+        UserRole.ADMIN.value,
+        UserRole.CREW,
+        UserRole.ADMIN,
+    ):
+        raise PermissionDeniedError("Only crew or admin can publish an official milestone for a complaint.")
     post = TransparencyService.create_post(db, current_user, post_in)
     return TransparencyPostRead.model_validate(post)
 

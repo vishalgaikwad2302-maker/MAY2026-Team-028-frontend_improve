@@ -9,7 +9,7 @@ on a post, mirroring the audit-log shape already used for
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -21,12 +21,13 @@ class TransparencyPost(Base, TimestampMixin):
     __tablename__ = "transparency_posts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    complaint_id: Mapped[int] = mapped_column(
-        ForeignKey("complaints.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    complaint_id: Mapped[int | None] = mapped_column(
+        ForeignKey("complaints.id", ondelete="CASCADE"), nullable=True, unique=False, index=True
     )
     ward_id: Mapped[int | None] = mapped_column(ForeignKey("wards.id"), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    images: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     before_photo_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     after_photo_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     applause_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

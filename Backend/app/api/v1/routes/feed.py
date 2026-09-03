@@ -7,11 +7,13 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
-from app.models.user import User
+from app.core.exceptions import PermissionDeniedError
+from app.models.user import User, UserRole
 from app.schemas.common import Page
 from app.schemas.transparency import (
     PostCommentCreate,
     PostCommentRead,
+    TransparencyPostCreate,
     TransparencyPostRead,
 )
 from app.services.transparency_service import TransparencyService
@@ -36,6 +38,24 @@ def list_feed_posts(
         page_size=page_size,
         total=total,
     )
+
+
+@router.post("", response_model=TransparencyPostRead, status_code=status.HTTP_201_CREATED)
+def create_feed_post(
+    post_in: TransparencyPostCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> TransparencyPostRead:
+    """Create a new transparency/feed post (any authenticated user)."""
+    if post_in.complaint_id is not None and current_user.role not in (
+        UserRole.CREW.value,
+        UserRole.ADMIN.value,
+        UserRole.CREW,
+        UserRole.ADMIN,
+    ):
+        raise PermissionDeniedError("Only crew or admin can publish an official milestone for a complaint.")
+    post = TransparencyService.create_post(db, current_user, post_in)
+    return TransparencyPostRead.model_validate(post)
 
 
 @router.get("/{post_id}", response_model=TransparencyPostRead)

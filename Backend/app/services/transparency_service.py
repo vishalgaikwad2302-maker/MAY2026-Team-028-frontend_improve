@@ -23,25 +23,35 @@ class TransparencyService:
     def create_post(
         db: Session, current_user: User, post_in: TransparencyPostCreate
     ) -> TransparencyPost:
-        complaint = ComplaintRepository.get_by_id(db, post_in.complaint_id)
-        if not complaint:
-            raise NotFoundError("Complaint not found.")
-        if complaint.status not in {
-            ComplaintStatus.RESOLVED.value,
-            ComplaintStatus.VERIFIED.value,
-            ComplaintStatus.CLOSED.value,
-        }:
-            raise InvalidStateTransitionError(
-                "A transparency post can only be published for a resolved or closed complaint."
-            )
-        if TransparencyRepository.get_by_complaint_id(db, complaint.id):
-            raise ConflictError("A transparency post already exists for this complaint.")
+        ward_id = None
+        complaint_id = None
+
+        if post_in.complaint_id is not None:
+            complaint = ComplaintRepository.get_by_id(db, post_in.complaint_id)
+            if not complaint:
+                raise NotFoundError("Complaint not found.")
+            if complaint.status not in {
+                ComplaintStatus.RESOLVED.value,
+                ComplaintStatus.VERIFIED.value,
+                ComplaintStatus.CLOSED.value,
+            }:
+                raise InvalidStateTransitionError(
+                    "A transparency post can only be published for a resolved or closed complaint."
+                )
+            if TransparencyRepository.get_by_complaint_id(db, complaint.id):
+                raise ConflictError("A transparency post already exists for this complaint.")
+            complaint_id = complaint.id
+            ward_id = complaint.ward_id
+
+        # Take up to 3 images if provided
+        images_list = post_in.images[:3] if post_in.images else None
 
         post = TransparencyPost(
-            complaint_id=complaint.id,
-            ward_id=complaint.ward_id,
+            complaint_id=complaint_id,
+            ward_id=ward_id,
             title=post_in.title,
             description=post_in.description,
+            images=images_list,
             before_photo_url=post_in.before_photo_url,
             after_photo_url=post_in.after_photo_url,
             posted_by_user_id=current_user.id,

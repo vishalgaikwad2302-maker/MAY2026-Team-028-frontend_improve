@@ -403,3 +403,62 @@ def test_auto_generate_transparency_post_on_close(client: TestClient, db_session
     auto_post = matched[0]
     assert auto_post["before_photo_url"].startswith("/uploads/")
     assert auto_post["after_photo_url"] == "/uploads/after_clean.png"
+
+
+def test_citizen_can_create_standalone_transparency_post(client: TestClient, db_session: Session):
+    """Any logged-in citizen can publish a standalone minimal post with up to 3 images."""
+    citizen_token = _register_and_login(
+        db_session, client, "standalone_citizen@example.com", UserRole.CITIZEN
+    )
+    resp = client.post(
+        "/api/v1/transparency",
+        json={
+            "title": "Community Park Cleanup",
+            "description": "Volunteers collected 5 bags of recyclables from the playground.",
+            "images": ["/uploads/img1.jpg", "/uploads/img2.jpg", "/uploads/img3.jpg"],
+        },
+        headers=_auth(citizen_token),
+    )
+    assert resp.status_code == status.HTTP_201_CREATED, resp.text
+    data = resp.json()
+    assert data["title"] == "Community Park Cleanup"
+    assert data["complaint_id"] is None
+    assert len(data["images"]) == 3
+    assert data["images"][0] == "/uploads/img1.jpg"
+
+
+def test_citizen_can_create_standalone_feed_post(client: TestClient, db_session: Session):
+    """POST /api/v1/feed also works for creating standalone posts."""
+    citizen_token = _register_and_login(
+        db_session, client, "feed_citizen@example.com", UserRole.CITIZEN
+    )
+    resp = client.post(
+        "/api/v1/feed",
+        json={
+            "title": "Cleaned Roadway",
+            "description": "Quick sweep along Main Street.",
+            "images": ["/uploads/photo1.jpg"],
+        },
+        headers=_auth(citizen_token),
+    )
+    assert resp.status_code == status.HTTP_201_CREATED, resp.text
+    data = resp.json()
+    assert data["title"] == "Cleaned Roadway"
+    assert data["images"] == ["/uploads/photo1.jpg"]
+
+
+def test_create_post_max_images_validation(client: TestClient, db_session: Session):
+    """Posting more than 3 images triggers a 422 validation error."""
+    citizen_token = _register_and_login(
+        db_session, client, "four_images_citizen@example.com", UserRole.CITIZEN
+    )
+    resp = client.post(
+        "/api/v1/transparency",
+        json={
+            "title": "Too Many Images",
+            "description": "Attempting 4 images",
+            "images": ["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg"],
+        },
+        headers=_auth(citizen_token),
+    )
+    assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
