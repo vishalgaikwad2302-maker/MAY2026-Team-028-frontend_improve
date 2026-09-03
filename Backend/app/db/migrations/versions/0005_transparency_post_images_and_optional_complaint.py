@@ -33,6 +33,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Reverse the change."""
+    # Ensure no rows have null complaint_id before re-applying NOT NULL constraint
+    op.execute("DELETE FROM transparency_posts WHERE complaint_id IS NULL")
     with op.batch_alter_table('transparency_posts', schema=None) as batch_op:
         batch_op.drop_column('images')
         batch_op.drop_index('ix_transparency_posts_complaint_id')
