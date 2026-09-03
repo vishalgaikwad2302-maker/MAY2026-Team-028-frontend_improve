@@ -147,6 +147,7 @@ class TaskService:
         *,
         completed_by_user_id: int | None = None,
         completion_photo_url: str | None = None,
+        completion_photos: list[str] | None = None,
         waste_removed: str | None = None,
         resolution_notes: str | None = None,
     ) -> Task:
@@ -158,6 +159,10 @@ class TaskService:
             "status": TaskStatus.COMPLETED.value,
             "completed_at": datetime.now(UTC),
         }
+        if completion_photos is not None:
+            update_data["completion_photos"] = completion_photos
+            if completion_photo_url is None and len(completion_photos) > 0:
+                completion_photo_url = completion_photos[0]
         if completion_photo_url is not None:
             update_data["completion_photo_url"] = completion_photo_url
         if waste_removed is not None:
@@ -181,7 +186,12 @@ class TaskService:
 
         if updated.complaint_id:
             ComplaintService.change_status(
-                db, updated.complaint_id, "resolved", changed_by_user_id=completed_by_user_id
+                db,
+                updated.complaint_id,
+                "resolved",
+                changed_by_user_id=completed_by_user_id,
+                completion_photos=completion_photos,
+                resolution_notes=resolution_notes,
             )
         return updated
 

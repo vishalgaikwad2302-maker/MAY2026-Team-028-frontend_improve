@@ -4036,3 +4036,99 @@ span.star-btn {
   color: #ef4444;
   margin-left: 0.2rem;
 }
+
+/* ==========================================================================
+   REMEDIATION PROOF OF WORK & COMPLETION PHOTO GALLERY
+   ========================================================================== */
+.clickable-photo {
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.clickable-photo:hover {
+  opacity: 0.92;
+  transform: scale(1.01);
+}
+
+.proof-of-work-card {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  background: var(--card-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-left: 4px solid var(--accent, #10b981);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.proof-card-header h3 {
+  margin: 0.35rem 0 0.15rem 0;
+  font-size: 1.15rem;
+  color: var(--text-h, #f8fafc);
+}
+
+.proof-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent, #10b981);
+}
+
+.proof-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.proof-notes {
+  margin: 0.75rem 0 1rem 0;
+  padding: 0.65rem 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.9rem;
+  color: var(--text-p, #e2e8f0);
+}
+
+.proof-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.proof-photo-item {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  cursor: pointer;
+  background: #000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.proof-photo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.proof-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.proof-photo-label {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}

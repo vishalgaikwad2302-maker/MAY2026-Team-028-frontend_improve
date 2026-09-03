@@ -290,3 +290,14 @@ export async function addTransparencyCommentApi(postId, commentText) {
 export async function getTransparencyCommentsApi(postId) {
   return await apiFetch(`/transparency/${postId}/comments`);
 }
+
+// Complaint Resolution with Completion Proof Photos
+export async function resolveComplaintApi(complaintId, { completion_photos, resolution_notes }) {
+  return await apiFetch(`/complaints/${complaintId}/resolve`, {
+    method: "POST",
+    body: JSON.stringify({
+      completion_photos,
+      resolution_notes: resolution_notes || null,
+    }),
+  });
+}

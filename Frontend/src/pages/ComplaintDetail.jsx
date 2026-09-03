@@ -16,6 +16,7 @@ import {
   IconGrid,
   IconStar,
   IconRadar,
+  IconX,
 } from "../components/Icons";
 
 // Same ~200m / text-overlap thresholds as the duplicate warning shown to
@@ -76,6 +77,7 @@ export default function ComplaintDetail() {
   const [hoveredStar, setHoveredStar] = useState(0);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [activeLightboxImg, setActiveLightboxImg] = useState(null);
 
   useEffect(() => {
     setImageError(false);
@@ -179,7 +181,9 @@ export default function ComplaintDetail() {
           <img
             src={getMediaUrl(complaint.photo)}
             alt="Reported issue evidence"
-            className="detail-photo"
+            className="detail-photo clickable-photo"
+            onClick={() => setActiveLightboxImg(complaint.photo)}
+            title="Click to view full photo"
             onError={() => setImageError(true)}
           />
         ) : (
@@ -239,6 +243,44 @@ export default function ComplaintDetail() {
           </div>
         ))}
       </div>
+
+      {/* Remediation Proof of Work Section */}
+      {complaint.completionPhotos && complaint.completionPhotos.length > 0 && (
+        <div className="proof-of-work-card">
+          <div className="proof-card-header">
+            <div>
+              <span className="proof-badge">
+                <IconCheckCircle /> Verified Remediation Proof
+              </span>
+              <h3>Field Cleanup Evidence ({complaint.completionPhotos.length} photo{complaint.completionPhotos.length > 1 ? "s" : ""})</h3>
+              <p className="proof-meta">
+                Remediated by <strong>{complaint.assignedTo || "Field Crew"}</strong>
+                {complaint.resolvedAt && ` • ${complaint.resolvedAt}`}
+              </p>
+            </div>
+          </div>
+
+          {complaint.resolutionNotes && (
+            <p className="proof-notes">
+              <strong>Crew Remarks:</strong> "{complaint.resolutionNotes}"
+            </p>
+          )}
+
+          <div className="proof-photos-grid">
+            {complaint.completionPhotos.map((photoUrl, idx) => (
+              <div
+                key={idx}
+                className="proof-photo-item"
+                onClick={() => setActiveLightboxImg(photoUrl)}
+                title="Click to expand proof photo"
+              >
+                <img src={getMediaUrl(photoUrl)} alt={`Completion proof ${idx + 1}`} loading="lazy" />
+                <span className="proof-photo-label">Proof #{idx + 1}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {user?.role === "admin" && (
         <div className="nearby-panel">
@@ -415,6 +457,22 @@ export default function ComplaintDetail() {
             </div>
           )}
         </>
+      )}
+
+      {/* Lightbox Overlay for Detail Photos */}
+      {activeLightboxImg && (
+        <div className="lightbox-overlay" onClick={() => setActiveLightboxImg(null)}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="lightbox-close-btn"
+              onClick={() => setActiveLightboxImg(null)}
+              title="Close full view"
+            >
+              <IconX />
+            </button>
+            <img src={getMediaUrl(activeLightboxImg)} alt="Enlarged view" />
+          </div>
+        </div>
       )}
     </div>
   );

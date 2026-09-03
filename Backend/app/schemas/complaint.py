@@ -97,6 +97,21 @@ class ComplaintUpdate(BaseModel):
     longitude: float | None = None
     photo_url: str | None = Field(default=None, max_length=10_000_000)
     tags: list[str] | None = None
+    completion_photos: list[str] | None = Field(default=None, max_length=3)
+    resolution_notes: str | None = Field(default=None, max_length=1000)
+
+
+class ComplaintResolve(BaseModel):
+    """Payload for crew/admin resolving a complaint with proof of work."""
+
+    completion_photos: list[str] = Field(
+        min_length=1,
+        max_length=3,
+        description="1 to 3 URLs of completion proof photos",
+    )
+    resolution_notes: str | None = Field(
+        default=None, max_length=1000, description="Optional remediation notes"
+    )
 
 
 class ComplaintVerify(BaseModel):
@@ -120,6 +135,8 @@ class ComplaintRead(ComplaintBase):
     id: int
     reported_by_user_id: int
     status: ComplaintStatus
+    completion_photos: list[str] | None = None
+    resolution_notes: str | None = None
     resolved_at: datetime | None = None
     cancelled_at: datetime | None = None
     created_at: datetime

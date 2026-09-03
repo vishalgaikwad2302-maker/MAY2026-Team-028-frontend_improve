@@ -30,6 +30,11 @@ export default function ComplaintCard({ complaint, onAssign, onComplete, duplica
           <IconUserPlus /> Assigned to: {complaint.assignedTo}
         </p>
       )}
+      {complaint.completionPhotos && complaint.completionPhotos.length > 0 && (
+        <p className="proof-tag" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", color: "var(--accent, #10b981)", fontWeight: "600", marginTop: "0.25rem" }}>
+          <IconCheckCircle /> Proof of Work ({complaint.completionPhotos.length} photo{complaint.completionPhotos.length > 1 ? "s" : ""})
+        </p>
+      )}
       <p className="date">Reported: {complaint.createdAt}</p>
       <div className="card-actions">
         {complaint.coords && (

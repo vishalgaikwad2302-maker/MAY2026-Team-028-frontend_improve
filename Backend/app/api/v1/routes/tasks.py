@@ -84,6 +84,7 @@ def complete_task(
             task_id,
             completed_by_user_id=current_user.id,
             completion_photo_url=payload.completion_photo_url if payload else None,
+            completion_photos=payload.completion_photos if payload else None,
             waste_removed=payload.waste_removed if payload else None,
             resolution_notes=payload.resolution_notes if payload else None,
         ),

@@ -681,3 +681,71 @@ def test_close_complaint_happy_path(client: TestClient, db_session: Session):
     data = resp.json()
     assert data["status"] == "closed"
     assert data["resolved_at"] is not None
+
+
+def test_crew_resolve_complaint_with_completion_photos_happy_path(
+    client: TestClient, db_session: Session
+):
+    """Crew member resolves complaint providing 1-3 completion photos as proof of work."""
+    citizen_token = _register_citizen_token(db_session, client, "res_cit@example.com")
+    crew_token = _register_and_login(db_session, client, "res_crew@example.com", UserRole.CREW)
+    admin_token = _register_and_login(db_session, client, "res_admin@example.com", UserRole.ADMIN)
+    complaint_id = _create_complaint(db_session, citizen_token, client)
+
+    # Admin moves complaint to in_progress
+    client.patch(
+        f"/api/v1/complaints/{complaint_id}/status",
+        json={"status_value": "in_progress"},
+        headers=_auth(admin_token),
+    )
+
+    # Crew resolves complaint with 2 proof photos and notes
+    photos = ["/uploads/proof_1.jpg", "/uploads/proof_2.webp"]
+    resp = client.post(
+        f"/api/v1/complaints/{complaint_id}/resolve",
+        json={"completion_photos": photos, "resolution_notes": "Garbage cleared and sanitized."},
+        headers=_auth(crew_token),
+    )
+    assert resp.status_code == status.HTTP_200_OK, resp.text
+    data = resp.json()
+    assert data["status"] == "resolved"
+    assert data["completion_photos"] == photos
+    assert data["resolution_notes"] == "Garbage cleared and sanitized."
+    assert data["resolved_at"] is not None
+
+
+def test_resolve_complaint_photo_validation(client: TestClient, db_session: Session):
+    """Validation: completion_photos requires 1 to 3 items."""
+    citizen_token = _register_citizen_token(db_session, client, "val_cit@example.com")
+    crew_token = _register_and_login(db_session, client, "val_crew@example.com", UserRole.CREW)
+    complaint_id = _create_complaint(db_session, citizen_token, client)
+
+    # Empty list should be rejected with 422
+    resp_empty = client.post(
+        f"/api/v1/complaints/{complaint_id}/resolve",
+        json={"completion_photos": []},
+        headers=_auth(crew_token),
+    )
+    assert resp_empty.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    # 4 photos should be rejected with 422
+    resp_over = client.post(
+        f"/api/v1/complaints/{complaint_id}/resolve",
+        json={"completion_photos": ["/u1.jpg", "/u2.jpg", "/u3.jpg", "/u4.jpg"]},
+        headers=_auth(crew_token),
+    )
+    assert resp_over.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_citizen_cannot_resolve_complaint(client: TestClient, db_session: Session):
+    """Citizen role cannot resolve a complaint (Crew/Admin only)."""
+    citizen_token = _register_citizen_token(db_session, client, "unauth_res@example.com")
+    complaint_id = _create_complaint(db_session, citizen_token, client)
+
+    resp = client.post(
+        f"/api/v1/complaints/{complaint_id}/resolve",
+        json={"completion_photos": ["/proof.jpg"]},
+        headers=_auth(citizen_token),
+    )
+    assert resp.status_code == status.HTTP_403_FORBIDDEN
+

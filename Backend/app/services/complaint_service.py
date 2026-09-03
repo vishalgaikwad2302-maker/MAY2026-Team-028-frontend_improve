@@ -146,6 +146,8 @@ class ComplaintService:
         new_status: ComplaintStatus | str,
         *,
         changed_by_user_id: int | None = None,
+        completion_photos: list[str] | None = None,
+        resolution_notes: str | None = None,
     ) -> Complaint:
         complaint = ComplaintService.get_complaint(db, complaint_id)
         new_status_value = new_status.value if hasattr(new_status, "value") else str(new_status)
@@ -159,14 +161,25 @@ class ComplaintService:
 
         complaint = ComplaintRepository.update(db, complaint, {"status": new_status_value})
         if new_status_value == ComplaintStatus.RESOLVED.value:
-            complaint = ComplaintRepository.update(
-                db, complaint, {"resolved_at": datetime.now(UTC)}
-            )
+            resolved_payload: dict[str, object] = {"resolved_at": datetime.now(UTC)}
+            if completion_photos is not None:
+                resolved_payload["completion_photos"] = completion_photos
+            if resolution_notes is not None:
+                resolved_payload["resolution_notes"] = resolution_notes
+            complaint = ComplaintRepository.update(db, complaint, resolved_payload)
             NotificationService.notify_complaint_resolved(db, complaint)
         if new_status_value == ComplaintStatus.CANCELLED.value:
             complaint = ComplaintRepository.update(
                 db, complaint, {"cancelled_at": datetime.now(UTC)}
             )
+
+        history_notes = "Status changed"
+        if new_status_value == ComplaintStatus.RESOLVED.value and completion_photos:
+            history_notes = f"Resolved with {len(completion_photos)} completion photo(s)"
+            if resolution_notes:
+                history_notes += f": {resolution_notes}"
+        elif resolution_notes:
+            history_notes = resolution_notes
 
         ComplaintRepository.add_history(
             db,
@@ -175,11 +188,34 @@ class ComplaintService:
                 from_status=current_status,
                 to_status=new_status_value,
                 changed_by_user_id=changed_by_user_id or complaint.reported_by_user_id,
-                notes="Status changed",
+                notes=history_notes,
                 created_at=datetime.now(UTC),
             ),
         )
         return complaint
+
+    @staticmethod
+    def resolve_complaint(
+        db: Session,
+        complaint_id: int,
+        *,
+        completion_photos: list[str],
+        resolution_notes: str | None = None,
+        resolved_by_user_id: int | None = None,
+    ) -> Complaint:
+        if not completion_photos or len(completion_photos) < 1:
+            raise ValueError("At least 1 completion photo is required to resolve a complaint.")
+        if len(completion_photos) > 3:
+            raise ValueError("A maximum of 3 completion photos can be uploaded.")
+
+        return ComplaintService.change_status(
+            db,
+            complaint_id,
+            ComplaintStatus.RESOLVED,
+            changed_by_user_id=resolved_by_user_id,
+            completion_photos=completion_photos,
+            resolution_notes=resolution_notes,
+        )
 
     @staticmethod
     def cancel_complaint(

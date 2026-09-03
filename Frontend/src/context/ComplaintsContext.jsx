@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
-import { apiFetch, createComplaintApi, getMediaUrl, uploadPhotoApi } from "../utils/api";
+import { apiFetch, createComplaintApi, getMediaUrl, resolveComplaintApi, uploadPhotoApi } from "../utils/api";
 
 const ComplaintsContext = createContext(null);
 
@@ -144,8 +144,13 @@ export function ComplaintsProvider({ children }) {
     assignedWorkerId: fallbackData.assignedWorkerId || apiComplaint.assigned_worker_id || null,
     assignedAt: fallbackData.assignedAt || apiComplaint.assigned_at || null,
     instructions: fallbackData.instructions || null,
+    completionPhotos:
+      Array.isArray(apiComplaint.completion_photos) && apiComplaint.completion_photos.length > 0
+        ? apiComplaint.completion_photos.map((p) => getMediaUrl(p))
+        : fallbackData.completionPhotos || [],
+    resolutionNotes: apiComplaint.resolution_notes || fallbackData.resolutionNotes || null,
     createdAt: (apiComplaint.created_at || new Date().toISOString()).slice(0, 10),
-    resolvedAt: apiComplaint.resolved_at ? apiComplaint.resolved_at.slice(0, 10) : undefined,
+    resolvedAt: apiComplaint.resolved_at ? apiComplaint.resolved_at.slice(0, 10) : fallbackData.resolvedAt,
     cancelledAt: apiComplaint.cancelled_at ? apiComplaint.cancelled_at.slice(0, 10) : undefined,
   });
 
@@ -271,9 +276,58 @@ export function ComplaintsProvider({ children }) {
     return { success: true };
   };
 
+  const resolveComplaint = async (id, { completionPhotos = [], resolutionNotes = "" }) => {
+    const resolvedDate = new Date().toISOString().slice(0, 10);
+    const result = await resolveComplaintApi(id, {
+      completion_photos: completionPhotos,
+      resolution_notes: resolutionNotes,
+    });
+
+    if (result.success && result.data) {
+      const updated = toLocalComplaint(result.data, {
+        completionPhotos,
+        resolutionNotes,
+        status: "Resolved",
+        resolvedAt: resolvedDate,
+      });
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, ...updated, status: "Resolved", completionPhotos, resolutionNotes, resolvedAt: resolvedDate }
+            : c
+        )
+      );
+      return { success: true, data: result.data };
+    }
+
+    // Offline / fallback locally
+    setComplaints((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              status: "Resolved",
+              completionPhotos,
+              resolutionNotes,
+              resolvedAt: resolvedDate,
+            }
+          : c
+      )
+    );
+    return { success: true };
+  };
+
   return (
     <ComplaintsContext.Provider
-      value={{ complaints, addComplaint, updateStatus, updateComplaint, cancelComplaint, refreshComplaints }}
+      value={{
+        complaints,
+        addComplaint,
+        updateStatus,
+        resolveComplaint,
+        updateComplaint,
+        cancelComplaint,
+        refreshComplaints,
+      }}
     >
       {children}
     </ComplaintsContext.Provider>

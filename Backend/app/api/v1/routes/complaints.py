@@ -14,6 +14,7 @@ from app.schemas.complaint import (
     ComplaintClassifyRead,
     ComplaintClose,
     ComplaintRead,
+    ComplaintResolve,
     ComplaintStatus,
     ComplaintStatusHistoryRead,
     ComplaintSubmit,
@@ -219,6 +220,29 @@ def change_complaint_status(
             complaint_id,
             status_value,
             changed_by_user_id=current_user.id,
+        )
+    )
+
+
+@router.post(
+    "/{complaint_id}/resolve",
+    response_model=ComplaintRead,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role(UserRole.ADMIN, UserRole.CREW))],
+)
+def resolve_complaint(
+    complaint_id: int,
+    resolve_in: ComplaintResolve = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ComplaintRead:
+    return _to_read_model(
+        ComplaintService.resolve_complaint(
+            db,
+            complaint_id,
+            completion_photos=resolve_in.completion_photos,
+            resolution_notes=resolve_in.resolution_notes,
+            resolved_by_user_id=current_user.id,
         )
     )
 

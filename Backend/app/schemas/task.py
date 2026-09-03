@@ -51,6 +51,9 @@ class TaskUpdate(BaseModel):
 class TaskComplete(BaseModel):
     """Payload for completing a task."""
 
+    completion_photos: list[str] | None = Field(
+        default=None, max_length=3, description="1 to 3 URLs of completion proof photos"
+    )
     completion_photo_url: str | None = Field(
         default=None, description="URL of photo after task completion"
     )
@@ -69,6 +72,7 @@ class TaskRead(TaskBase):
     assigned_by_user_id: int | None = None
     resolution_notes: str | None = None
     completion_photo_url: str | None = None
+    completion_photos: list[str] | None = None
     waste_removed: str | None = None
     assigned_at: datetime | None = None
     started_at: datetime | None = None

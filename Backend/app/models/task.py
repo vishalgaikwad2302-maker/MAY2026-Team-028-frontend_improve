@@ -3,7 +3,7 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, Text, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, Table, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -54,6 +54,7 @@ class Task(Base, TimestampMixin):
     assigned_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     resolution_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     completion_photo_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    completion_photos: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     waste_removed: Mapped[str | None] = mapped_column(String(100), nullable=True)
     assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
