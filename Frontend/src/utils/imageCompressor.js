@@ -143,3 +143,16 @@ export async function compressImage(file, options = {}) {
     img.src = tempUrl;
   });
 }
+
+/**
+ * Converts a File or Blob into a base64 Data URL.
+ * Useful for offline / static fallback image storage.
+ */
+export function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}

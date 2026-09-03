@@ -10,7 +10,7 @@ import {
   IconX,
   IconFeed,
 } from "../components/Icons";
-import { compressImage, formatBytes } from "../utils/imageCompressor";
+import { compressImage, formatBytes, fileToDataUrl } from "../utils/imageCompressor";
 import {
   getFeedPostsApi,
   createTransparencyPostApi,
@@ -49,37 +49,48 @@ export default function PublicTransparencyFeed() {
     setLoading(true);
     try {
       const res = await getFeedPostsApi(1, 40);
-      if (res.success && res.data?.items) {
-        // Merge backend posts with any local mock posts not yet on server
+      const localItems = (localFeed || []).map((p) => ({
+        ...p,
+        authorName: p.authorName || p.resolvedBy || "Community Member",
+        description:
+          p.description ||
+          (p.wasteRemoved
+            ? `${p.location ? `${p.location} • ` : ""}Cleared ${p.wasteRemoved}${p.hazardAddressed ? ` (${p.hazardAddressed})` : ""}`
+            : ""),
+        date: p.date || p.completedAt || "Recent",
+      }));
+
+      if (res.success && Array.isArray(res.data?.items)) {
         const backendItems = res.data.items.map((p) => ({
           ...p,
           authorName: p.author_name || (p.complaint_id ? "SmartSweep Crew" : "Community Member"),
           verified: !!p.complaint_id,
           applauds: p.applause_count || 0,
           comments: p.comments || [],
-          date: p.created_at ? new Date(p.created_at).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }) : "Recent",
+          date: p.created_at
+            ? new Date(p.created_at).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "Recent",
         }));
-        setPosts(backendItems);
+
+        // Merge: keep local mock or offline posts that are not present in backend
+        const backendIds = new Set(backendItems.map((p) => String(p.id)));
+        const uniqueLocals = localItems.filter((lp) => !backendIds.has(String(lp.id)));
+
+        setPosts([...uniqueLocals, ...backendItems]);
       } else {
         // Fallback to local context feed
-        setPosts(
-          (localFeed || []).map((p) => ({
-            ...p,
-            authorName: p.resolvedBy || "SmartSweep Crew",
-            date: p.completedAt || "Recent",
-          }))
-        );
+        setPosts(localItems);
       }
     } catch {
       setPosts(
         (localFeed || []).map((p) => ({
           ...p,
-          authorName: p.resolvedBy || "SmartSweep Crew",
-          date: p.completedAt || "Recent",
+          authorName: p.authorName || p.resolvedBy || "Community Member",
+          date: p.date || p.completedAt || "Recent",
         }))
       );
     } finally {
@@ -171,28 +182,42 @@ export default function PublicTransparencyFeed() {
     setIsSubmitting(true);
 
     try {
-      // 1. Upload compressed photos first (if any)
+      // 1. Upload compressed photos (or fallback to compressed data URLs)
       const uploadedImageUrls = [];
       for (const img of selectedImages) {
-        const uploadRes = await uploadPhotoApi(img.file);
-        if (uploadRes.success && uploadRes.url) {
-          uploadedImageUrls.push(uploadRes.url);
-        } else {
-          console.warn("Upload failed for file, skipping:", img.name);
+        try {
+          const uploadRes = await uploadPhotoApi(img.file);
+          if (uploadRes.success && uploadRes.url) {
+            uploadedImageUrls.push(uploadRes.url);
+          } else {
+            const dataUrl = await fileToDataUrl(img.file);
+            uploadedImageUrls.push(dataUrl);
+          }
+        } catch {
+          const dataUrl = await fileToDataUrl(img.file);
+          uploadedImageUrls.push(dataUrl);
         }
       }
 
-      // 2. Call backend API to create transparency post
-      const payload = {
-        title: title.trim(),
-        description: description.trim(),
-        images: uploadedImageUrls,
-      };
+      // 2. Try calling backend API (if server is available)
+      let backendId = null;
+      try {
+        const payload = {
+          title: title.trim(),
+          description: description.trim(),
+          images: uploadedImageUrls.filter((u) => !u.startsWith("data:")),
+        };
+        const apiRes = await createTransparencyPostApi(payload);
+        if (apiRes.success && apiRes.data?.id) {
+          backendId = apiRes.data.id;
+        }
+      } catch {
+        // Backend offline or static host
+      }
 
-      const apiRes = await createTransparencyPostApi(payload);
-
+      const postId = backendId || `F-${Date.now()}`;
       const createdPost = {
-        id: apiRes.success && apiRes.data?.id ? apiRes.data.id : `F-${Date.now()}`,
+        id: postId,
         title: title.trim(),
         description: description.trim(),
         images: uploadedImageUrls,
@@ -204,15 +229,12 @@ export default function PublicTransparencyFeed() {
       };
 
       // Optimistically prepend to active posts list
-      setPosts((prev) => [createdPost, ...prev]);
+      setPosts((prev) => [createdPost, ...prev.filter((p) => String(p.id) !== String(postId))]);
 
-      // Sync to local operational context
+      // Sync to local operational context and localStorage
       localAddFeedPost({
-        title: title.trim(),
-        description: description.trim(),
-        images: uploadedImageUrls,
+        ...createdPost,
         resolvedBy: user.name || user.full_name || "Community Member",
-        verified: user.role === "crew" || user.role === "admin",
       });
 
       notify("Transparency update published successfully! ✨", "success");
@@ -312,6 +334,14 @@ export default function PublicTransparencyFeed() {
     const imgs = [];
     if (Array.isArray(post.images) && post.images.length > 0) {
       imgs.push(...post.images);
+    } else if (typeof post.images === "string" && post.images.trim()) {
+      try {
+        const parsed = JSON.parse(post.images);
+        if (Array.isArray(parsed)) imgs.push(...parsed);
+        else imgs.push(post.images);
+      } catch {
+        imgs.push(post.images);
+      }
     } else {
       if (post.beforePhoto) imgs.push(post.beforePhoto);
       if (post.afterPhoto) imgs.push(post.afterPhoto);

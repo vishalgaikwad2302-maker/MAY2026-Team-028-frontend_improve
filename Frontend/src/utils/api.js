@@ -44,9 +44,9 @@ async function rawFetch(endpoint, config) {
     try {
       const url = `${base}${endpoint}`;
       const response = await fetch(url, config);
-      // If we get a 404 HTML response from Vite dev server for relative route, try next candidate
+      // If we get an HTML response (e.g. Vite or Vercel static SPA rewrite returning index.html), skip to next candidate
       const contentType = response.headers.get("content-type") || "";
-      if (response.status === 404 && contentType.includes("text/html") && base === "/api/v1") {
+      if (contentType.includes("text/html") && (base === "/api/v1" || !base.includes("8000"))) {
         continue;
       }
       return response;
